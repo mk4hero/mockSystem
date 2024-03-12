@@ -42,6 +42,9 @@ import java.util.*;
 public class MsgMockServiceImpl implements IMsgMockService {
 
     public static final Logger logger = LoggerFactory.getLogger(MsgMockServiceImpl.class);
+    private final static String XML_STR = "xml";
+    private final static String JSON_STR = "json";
+    private final static String FLSTR_STR = "flStr";
 
     @Autowired
     private MocksysTemplateNodeInfoDAO mocksysTemplateNodeInfoDAO;
@@ -52,35 +55,24 @@ public class MsgMockServiceImpl implements IMsgMockService {
     @Autowired
     private MocksysMappingInfoDAO mocksysMappingInfoDAO;
 
-    private final static String XML_STR = "xml";
-    private final static String JSON_STR = "json";
-    private final static String FLSTR_STR = "flStr";
-
     private HashMap<String , Integer> pathMap = new HashMap<>();
 
     int msgNnumber = 0;
 
+    /**
+     * 原报文是xml类型的处理函数
+     * @param reqMsg
+     * @param busiCode
+     * @return
+     */
     @Override
     public String serialNetDoXml(StringBuffer reqMsg, String busiCode) {
         logger.info("MsgMockServiceImpl-----接收xml报文为：" + XmlUtils.format(reqMsg.toString()));
-        String channel = "";
         String responseMsgStr = "";
+
         try {
-            //将报文流式处理，用语后续读取操作做准备
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(reqMsg.toString().getBytes());
-            InputStreamReader ir = new InputStreamReader(inputStream);
-            Document document = new SAXReader().read(ir);
-
-            try{
-                inputStream.close();
-                ir.close();
-            }catch (IOException e) {
-                logger.info("inputStream流关闭失败");
-                logger.error(e.getMessage(), e);
-//                throw new RuntimeException(e);
-            }
-
-            /** 获取xml报文最外层元素对象 */
+            /** 解析XML报文，获取xml报文最外层元素对象 */
+            Document document = DocumentHelper.parseText(reqMsg.toString());
             Element sourceRoot = document.getRootElement();
 
             /** 工具函数，将新的xml序列化到数据库备用 自用函数*/
@@ -88,479 +80,136 @@ public class MsgMockServiceImpl implements IMsgMockService {
 //            getXmlNodes(busiCode, channel, root, "", 0);
 //            pathMap = new HashMap<>();
 
-            try{
-                // 请求报文落表
-                MocksysMessagesInfo msgInfoDto = new MocksysMessagesInfo();
-                msgInfoDto.setId(UUIDUtils.get32UUID());
-                msgInfoDto.setMsgType(XML_STR);
-                msgInfoDto.setReqMsg(reqMsg.toString());
-                msgInfoDto.setReqDateTime(DateUtils.getDateTime());
-                msgInfoDto.setBusiCode(busiCode);
-                int id = -1;
-                id = mocksysMessagesInfoMapper.insertMocksysMessagesInfo(msgInfoDto);
-                if(id == -1){
-                    logger.info("报文落表失败");
-                }
-            }catch (Exception e){
-                logger.info("报文落表失败:");
-                logger.error(e.getMessage(), e);
-            }
+            /** 请求报文落表 */
+            saveRequestToDatabase(XmlUtils.format(reqMsg.toString()), XML_STR, busiCode);
 
             /** 第一步，获取应映射规则 */
-            MocksysMappingInfoExample example = new MocksysMappingInfoExample();
-            MocksysMappingInfoExample.Criteria criteria = example.createCriteria();
-            criteria.andSourceBusiCodeEqualTo(busiCode);
-            criteria.andSourceMsgTypeEqualTo(XML_STR);
-            List<MocksysMappingInfo> list = mocksysMappingInfoDAO.selectByExample(example);
+            List<MocksysMappingInfo> mappingInfoList = getMappingInfoList(XML_STR, busiCode);
 
             /** 第二步，获取目标报文模板 */
-            if( null != list && list.size() > 0){
-                String targetBusiCode = list.get(0).getTargetBusiCode();
-                String targetMsgType = list.get(0).getTargetMsgType();
+            if( null != mappingInfoList && mappingInfoList.size() > 0){
+                MocksysMappingInfo firstMappingInfo = mappingInfoList.get(0);
+                String targetBusiCode = firstMappingInfo.getTargetBusiCode();
+                String targetMsgType = firstMappingInfo.getTargetMsgType();
 
                 MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
                 MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
                 nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
                 nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
                 nodeInfoExample.setOrderByClause("id");
-//                nodeInfoCriteria.andChannelEqualTo();
                 List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
                 if(null != nodeInfoList && nodeInfoList.size() > 0){
                     if(XML_STR.equals(targetMsgType)){
-                        Document targetXml = xmlMsgCreate(nodeInfoList);
+                        Document targetXml = createXmlMessage(nodeInfoList);
                         Element targetRoot = targetXml.getRootElement();
-                        logger.info("生成模板报文为：", XmlUtils.format(targetXml.asXML()));
-                        for(MocksysMappingInfo rule : list){
-                            String sourcePath = rule.getSourcePath();
-                            String sourceSign = rule.getSourceSign();
-                            String targetPath = rule.getTargetPath();
-                            String targetSign = rule.getTargetSign();
-                            String action = rule.getAction();
-                            String operate = rule.getOperate();
-                            String parameter = rule.getParameter();
+                        logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
-                            if(null != action && !"".equals(action)) {
-                                switch (action) {
-                                    // 01字段值映射
-                                    case "01": {
-                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                        if(null != parameter){
-                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                        }
-
-                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-                                        String value = valueElement.getText();
-
-                                        List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-                                        Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
-                                        targetElement.setText(value);
-
-                                        xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-                                    } break;
-//                                    case "02": {
-//                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-//                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-//                                        String value = valueElement.getText();
-//
-//                                        List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-//                                        Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
-//                                        targetElement.setName(parameter);
-//                                        targetElement.setText(value);
-//                                    } break;
-//                                    case "03": {
-//                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-//                                        if(null != parameter){
-//                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-//                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-//                                        }
-//
-//                                        String attributeName = parameterJsonMap.get("attrbuiteName");
-//                                        String isNewElement = parameterJsonMap.get("isNewElement");
-//                                        String newElementName = parameterJsonMap.get("newElementName");
-//                                        parameterJsonMap.remove("attrbuiteName");
-//                                        parameterJsonMap.remove("isNewElement");
-//                                        parameterJsonMap.remove("newElementName");
-//
-//                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-//                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-//                                        Attribute sourceAttribute = valueElement.attribute(attributeName);
-//
-//                                        if("0".equals(isNewElement)){
-//                                            // 不是新节点，是 映射到现有节点
-//                                            List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-//                                            Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
-//                                            targetElement.setText(sourceAttribute.getValue());
-//
-//                                            xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-//                                        }else if("1".equals(isNewElement)){
-//                                            // 是新节点
-//                                            List<Element> targetFatherElementList = targetRoot.selectNodes(targetPath);
-//                                            Element targetFatherElement = targetFatherElementList.get(Integer.valueOf(targetSign));
-//                                            Element targetElement = targetFatherElement.addElement(newElementName);
-//                                            targetElement.setText(sourceAttribute.getValue());
-//
-//                                            xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-//                                        }
-//                                    } break;
-//                                    case "04": {
-//                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-//                                        if(null != parameter){
-//                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-//                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-//                                        }
-//
-//                                        String newElementName = parameterJsonMap.get("newElementName");
-//                                        String newElementValue = parameterJsonMap.get("newElementValue");
-//                                        String isNewValue = parameterJsonMap.get("isNewValue");
-//                                        parameterJsonMap.remove("newElementName");
-//                                        parameterJsonMap.remove("newElementValue");
-//                                        parameterJsonMap.remove("isNewValue");
-//
-//                                        if("0".equals(isNewValue)){
-//                                            // 从原报文节点中获取value
-//                                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-//                                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-//                                            newElementValue = valueElement.getText();
-//                                        }
-//
-//                                        // 使用新的value
-//                                        List<Element> targetFatherElementList = targetRoot.selectNodes(targetPath);
-//                                        Element targetFatherElement = targetFatherElementList.get(Integer.valueOf(targetSign));
-//                                        Element targetElement = targetFatherElement.addElement(newElementName);
-//                                        targetElement.setText(newElementValue);
-//
-//                                        xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-//                                    } break;
-                                }
-                            }
-                        }
-                        //响应报文内容
+                        manipulateXmlMessage(sourceRoot, targetRoot, mappingInfoList);
                         responseMsgStr = XmlUtils.format(targetXml.asXML());
                         logger.info("返回xml报文：" + responseMsgStr);
-                    }else if(JSON_STR.equals(targetMsgType)){
-                        JSONObject targetJsonObj = jsonMsgCreate(nodeInfoList);
-                        logger.info("生成模板报文为：", JsonUtils.format(targetJsonObj));
-                        for(MocksysMappingInfo rule : list){
-                            String sourcePath = rule.getSourcePath();
-                            String sourceSign = rule.getSourceSign();
-                            String targetPath = rule.getTargetPath();
-                            String action = rule.getAction();
-                            String operate = rule.getOperate();
-                            String parameter = rule.getParameter();
+                    } else if (JSON_STR.equals(targetMsgType)) {
+                        JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                        logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
-                            if(null != action && !"".equals(action)) {
-                                switch (action) {
-                                    // 01字段值映射
-                                    case "01": {
-                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                        if(null != parameter){
-                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                        }
-
-                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-                                        String value = valueElement.getText();
-
-                                        JSONPath.set(targetJsonObj, targetPath, value);
-                                        jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
-                                    } break;
-//                                    /** 不同报文类型间不支持字段名修改 */
-//                                    case "03": {
-//                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-//                                        if(null != parameter){
-//                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-//                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-//                                        }
-//
-//                                        String attributeName = parameterJsonMap.get("attrbuiteName");
-//                                        parameterJsonMap.remove("attrbuiteName");
-//
-//                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-//                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-//                                        Attribute sourceAttribute = valueElement.attribute(attributeName);
-//
-//                                        // 只支持映射到现有节点
-//                                        JSONPath.set(targetJsonObj, targetPath, sourceAttribute.getValue());
-//                                        jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
-//                                        /** 不同报文类型，应该直接维护报文模板，做字段映射处理，不应该支持动态添加字段 */
-//                                    } break;
-                                }
-                            }
-                        }
+                        manipulateJsonMessage(sourceRoot, targetJsonObj, mappingInfoList);
                         responseMsgStr = JsonUtils.format(targetJsonObj);
                         logger.info("返回json报文：" + responseMsgStr);
-                    }else if(FLSTR_STR.equals(targetMsgType)){
-                        StringBuffer targetFlStr = flStrMsgCreate(nodeInfoList);
-                        logger.info("生成模板报文为：", targetFlStr.toString());
+                    } else if (FLSTR_STR.equals(targetMsgType)) {
+                        StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                        logger.info("生成模板报文为：" + targetFlStr);
 
-                        for(MocksysMappingInfo rule : list){
-                            String sourcePath = rule.getSourcePath();
-                            String sourceSign = rule.getSourceSign();
-                            Integer targetLocation = rule.getTargetLocation();
-                            Integer targetLength = rule.getTargetLength();
-                            Integer targetLoopCount = rule.getTargetLoopCount();
-                            Integer targetLoopLength = rule.getTargetLoopLength();
-                            String sign = rule.getTargetSign();
-                            String action = rule.getAction();
-                            String operate = rule.getOperate();
-                            String parameter = rule.getParameter();
-
-                            if(null != action && !"".equals(action)) {
-                                switch (action) {
-                                    // 01字段值映射
-                                    case "01": {
-                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                        if(null != parameter){
-                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                        }
-
-                                        String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
-                                        parameterJsonMap.remove("sourcePlaceholders");
-
-                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-                                        String targetValue = valueElement.getText();
-
-                                        flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, targetValue, sourcePlaceholders, targetFlStr);
-
-//                                        // 判断目标字段是否为循环字段
-//                                        if("0".equals(sign)){
-//                                            // 不是循环字段
-//                                            String targetStr = StringUtils.leftPad("1", 5, "0");
-//                                        }else{
-//
-//                                        }
-
-                                    } break;
-                                    /** 不同报文类型间不支持字段名修改 */
-                                    case "03": {
-                                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                        if(null != parameter){
-                                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                        }
-
-                                        String attributeName = parameterJsonMap.get("attrbuiteName");
-                                        parameterJsonMap.remove("attrbuiteName");
-                                        String placeholders = parameterJsonMap.get("placeholders");
-                                        parameterJsonMap.remove("placeholders");
-
-                                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
-                                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
-                                        Attribute sourceAttribute = valueElement.attribute(attributeName);
-
-                                        // 只支持映射到现有节点
-                                        flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, sourceAttribute.getValue(), placeholders, targetFlStr);
-                                        /** 不同报文类型，应该直接维护报文模板，做字段映射处理，不应该支持动态添加字段 */
-                                    } break;
-                                }
-                            }
-                        }
-                        //响应报文内容
-                        logger.info("返回json报文：" + targetFlStr);
-                        return targetFlStr.toString();
-                    }else{
+                        manipulateFlStrMessage(sourceRoot, targetFlStr, mappingInfoList);
+                        responseMsgStr = targetFlStr.toString();
+                        logger.info("返回json报文：" + responseMsgStr);
+                    } else {
                         logger.error("报文类型判断错误，请检查！");
                     }
-                }else{
-                    logger.error("交易码：" + targetBusiCode + ",报文类型：" + targetMsgType + "不存在当前类型报文模板！");
+                } else {
+                    logger.error("交易码：" + targetBusiCode + ", 报文类型：" + targetMsgType + "不存在当前类型报文模板！");
                 }
-            }else{
-                logger.error("当前业务(业务号：" + busiCode + ";报文类型：" + XML_STR + ")下没有配置映射规则");
+            } else {
+                logger.error("当前业务(业务号：" + busiCode + "; 报文类型：" + XML_STR + ")下没有配置映射规则");
             }
-            return responseMsgStr;
-        }catch (DocumentException e){
+        } catch (DocumentException e) {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+        return responseMsgStr;
     }
 
+    /**
+     * 原报文时json类型是的处理函数
+     * @param reqMsg
+     * @param busiCode
+     * @return
+     */
     @Override
     public String serialNetDoJson(StringBuffer reqMsg, String busiCode) {
         String responseMsgStr = "";
 
-        String channel = "";
-        String json = reqMsg.toString();
-        LinkedHashMap<String, Object> jsonLinkedHashMap = JSON.parseObject(json, LinkedHashMap.class, Feature.OrderedField);
+        // 将请求消息转换为 JSON 对象并记录日志
         JSONObject sourceJsonObject = new JSONObject(true);
-        sourceJsonObject.putAll(jsonLinkedHashMap);
-
-        logger.info("接收json报文为：" + JsonUtils.format(sourceJsonObject));
-
-//        ArrayList channelArray = (ArrayList) JSONPath.read(jsonObject.toString(), "$..channel");
-//        channel = (String) channelArray.get(0);
+        try {
+            String json = reqMsg.toString();
+            LinkedHashMap<String, Object> jsonLinkedHashMap = JSON.parseObject(json, LinkedHashMap.class, Feature.OrderedField);
+            sourceJsonObject.putAll(jsonLinkedHashMap);
+            logger.info("接收到的 JSON 报文为：" + JsonUtils.format(sourceJsonObject));
+        } catch (Exception e) {
+            logger.error("解析 JSON 报文时出现错误：" + e.getMessage());
+        }
 
         /** 工具函数，将新的json序列化到数据库备用 自用函数*/
 //        String Xpath = new String("$");
 //        msgNnumber = 0;
-//        getJsonNodes(busiCode, channel, jsonObject, Xpath, 0);
+//        getJsonNodes(busiCode, channel, sourceJsonObject, Xpath, 0);
 
-        try{
-            // 请求报文落表
-            MocksysMessagesInfo msgInfoDto = new MocksysMessagesInfo();
-            msgInfoDto.setId(UUIDUtils.get32UUID());
-            msgInfoDto.setMsgType(JSON_STR);
-            // JSON美化
-            String pretty = JsonUtils.format(sourceJsonObject);
-            msgInfoDto.setReqMsg(pretty);
-            msgInfoDto.setReqDateTime(DateUtils.getDateTime());
-            msgInfoDto.setBusiCode(busiCode);
-            int id = -1;
-            id = mocksysMessagesInfoMapper.insertMocksysMessagesInfo(msgInfoDto);
-            if(id == -1){
-                logger.info("报文落表失败");
-            }
-        }catch (Exception e){
-            logger.info("报文落表失败:");
-            logger.error(e.getMessage(), e);
-        }
+        /** 请求报文落表 */
+        saveRequestToDatabase(JsonUtils.format(sourceJsonObject), JSON_STR, busiCode);
 
         /** 第一步，获取应映射规则 */
-        MocksysMappingInfoExample example = new MocksysMappingInfoExample();
-        MocksysMappingInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andSourceBusiCodeEqualTo(busiCode);
-        criteria.andSourceMsgTypeEqualTo(JSON_STR);
-        List<MocksysMappingInfo> list = mocksysMappingInfoDAO.selectByExample(example);
+        List<MocksysMappingInfo> mappingInfoList = getMappingInfoList(JSON_STR, busiCode);
 
         /** 第二步，获取目标报文模板 */
-        if( null != list && list.size() > 0){
-            String targetBusiCode = list.get(0).getTargetBusiCode();
-            String targetMsgType = list.get(0).getTargetMsgType();
+        if( null != mappingInfoList && mappingInfoList.size() > 0){
+            String targetBusiCode = mappingInfoList.get(0).getTargetBusiCode();
+            String targetMsgType = mappingInfoList.get(0).getTargetMsgType();
 
             MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
             MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
             nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
             nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
             nodeInfoExample.setOrderByClause("id");
-//                nodeInfoCriteria.andChannelEqualTo();
             List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
             if(null != nodeInfoList && nodeInfoList.size() > 0){
                 if(XML_STR.equals(targetMsgType)){
-                    Document targetXml = xmlMsgCreate(nodeInfoList);
+                    Document targetXml = createXmlMessage(nodeInfoList);
                     Element targetRoot = targetXml.getRootElement();
-                    logger.info("生成模板报文为：", XmlUtils.format(targetXml.asXML()));
-                    for(MocksysMappingInfo rule : list){
-                        String sourcePath = rule.getSourcePath();
-                        String targetPath = rule.getTargetPath();
-                        String targetSign = rule.getTargetSign();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
+                    logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String value = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
-
-                                    List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-                                    Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
-                                    targetElement.setText(value);
-
-                                    xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-                                } break;
-                            }
-                        }
-                    }
-                    //响应报文内容
+                    manipulateXmlMessage(sourceJsonObject, targetRoot, mappingInfoList);
                     responseMsgStr = XmlUtils.format(targetXml.asXML());
                     logger.info("返回xml报文：" + responseMsgStr);
-                }else if(JSON_STR.equals(targetMsgType)){
-                    JSONObject targetJsonObj = jsonMsgCreate(nodeInfoList);
-                    logger.info("生成模板报文为：", JsonUtils.format(targetJsonObj));
-                    for(MocksysMappingInfo rule : list){
-                        String sourcePath = rule.getSourcePath();
-                        String targetPath = rule.getTargetPath();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
+                } else if (JSON_STR.equals(targetMsgType)) {
+                    JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                    logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String value = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
-
-                                    JSONPath.set(targetJsonObj, targetPath, value);
-                                    jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
-                                } break;
-//                                case "02": {
-//                                    JSONPath.
-//
-//                                } break;
-                            }
-                        }
-                    }
+                    manipulateJsonMessage(sourceJsonObject, targetJsonObj, mappingInfoList);
                     responseMsgStr = JsonUtils.format(targetJsonObj);
                     logger.info("返回json报文：" + responseMsgStr);
-                }else if(FLSTR_STR.equals(targetMsgType)){
-                    StringBuffer targetFlStr = flStrMsgCreate(nodeInfoList);
-                    logger.info("生成模板报文为：", targetFlStr.toString());
+                } else if (FLSTR_STR.equals(targetMsgType)) {
+                    StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                    logger.info("生成模板报文为：" + targetFlStr);
 
-                    for(MocksysMappingInfo rule : list){
-                        String sourcePath = rule.getSourcePath();
-                        String sourceSign = rule.getSourceSign();
-                        Integer targetLocation = rule.getTargetLocation();
-                        Integer targetLength = rule.getTargetLength();
-                        Integer targetLoopCount = rule.getTargetLoopCount();
-                        Integer targetLoopLength = rule.getTargetLoopLength();
-                        String sign = rule.getTargetSign();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
-
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
-                                    parameterJsonMap.remove("sourcePlaceholders");
-
-                                    String targetValue = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
-
-                                    flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, targetValue, sourcePlaceholders, targetFlStr);
-
-//                                        // 判断目标字段是否为循环字段
-//                                        if("0".equals(sign)){
-//                                            // 不是循环字段
-//                                            String targetStr = StringUtils.leftPad("1", 5, "0");
-//                                        }else{
-//
-//                                        }
-
-                                } break;
-                            }
-                        }
-                    }
-                }else{
+                    manipulateFlStrMessage(sourceJsonObject, targetFlStr, mappingInfoList);
+                    responseMsgStr = targetFlStr.toString();
+                    logger.info("返回json报文：" + responseMsgStr);
+                } else {
                     logger.error("报文类型判断错误，请检查！");
                 }
-            }else{
-                logger.error("交易码：" + targetBusiCode + ",报文类型：" + targetMsgType + "不存在当前类型报文模板！");
+            } else {
+                logger.error("交易码：" + targetBusiCode + ", 报文类型：" + targetMsgType + "不存在当前类型报文模板！");
             }
         }else{
             logger.error("当前业务(业务号：" + busiCode + ";报文类型：" + XML_STR + ")下没有配置映射规则");
@@ -568,204 +217,64 @@ public class MsgMockServiceImpl implements IMsgMockService {
         return responseMsgStr;
     }
 
+    /**
+     * 原报文为定长字符串是的处理函数
+     * @param sourceFlStr
+     * @param busiCode
+     * @return
+     */
     @Override
     public String serialNetDoFlStr(StringBuffer sourceFlStr, String busiCode) {
         String responseMsgStr = "";
         logger.info("接收定长报文为：" + sourceFlStr);
         logger.info("接收定长报文长度为：" + sourceFlStr.length());
 
-        try{
-            // 请求报文落表
-            MocksysMessagesInfo msgInfoDto = new MocksysMessagesInfo();
-            msgInfoDto.setId(UUIDUtils.get32UUID());
-            msgInfoDto.setMsgType(FLSTR_STR);
-            msgInfoDto.setReqMsg(String.valueOf(sourceFlStr));
-            msgInfoDto.setReqDateTime(DateUtils.getDateTime());
-            msgInfoDto.setBusiCode(busiCode);
-            int id = -1;
-            id = mocksysMessagesInfoMapper.insertMocksysMessagesInfo(msgInfoDto);
-            if(id == -1){
-                logger.info("报文落表失败");
-            }
-        }catch (Exception e){
-            logger.info("报文落表失败:");
-            logger.error(e.getMessage(), e);
-        }
+        /** 请求报文落表 */
+        saveRequestToDatabase(String.valueOf(sourceFlStr), FLSTR_STR, busiCode);
 
         /** 第一步，获取应映射规则 */
-        MocksysMappingInfoExample example = new MocksysMappingInfoExample();
-        MocksysMappingInfoExample.Criteria criteria = example.createCriteria();
-        criteria.andSourceBusiCodeEqualTo(busiCode);
-        criteria.andSourceMsgTypeEqualTo(FLSTR_STR);
-        List<MocksysMappingInfo> list = mocksysMappingInfoDAO.selectByExample(example);
+        List<MocksysMappingInfo> mappingInfoList = getMappingInfoList(JSON_STR, busiCode);
 
         /** 第二步，获取目标报文模板 */
-        if( null != list && list.size() > 0){
-            String targetBusiCode = list.get(0).getTargetBusiCode();
-            String targetMsgType = list.get(0).getTargetMsgType();
+        if( null != mappingInfoList && mappingInfoList.size() > 0){
+            String targetBusiCode = mappingInfoList.get(0).getTargetBusiCode();
+            String targetMsgType = mappingInfoList.get(0).getTargetMsgType();
 
             MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
             MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
             nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
             nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
             nodeInfoExample.setOrderByClause("id");
-//                nodeInfoCriteria.andChannelEqualTo();
             List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
             if(null != nodeInfoList && nodeInfoList.size() > 0){
                 if(XML_STR.equals(targetMsgType)){
-                    Document targetXml = xmlMsgCreate(nodeInfoList);
+                    Document targetXml = createXmlMessage(nodeInfoList);
                     Element targetRoot = targetXml.getRootElement();
-                    logger.info("生成模板报文为：", XmlUtils.format(targetXml.asXML()));
-                    for(MocksysMappingInfo rule : list){
-                        Integer sourceLocation = rule.getSourceLocation();
-                        Integer sourceLength = rule.getSourceLength();
-                        Integer sourceLoopCount = rule.getSourceLoopCount();
-                        Integer sourceLoopLength = rule.getSourceLoopLength();
-                        String targetPath = rule.getTargetPath();
-                        String targetSign = rule.getTargetSign();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
+                    logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
-                                    parameterJsonMap.remove("sourcePlaceholders");
-                                    // 一般视定长字符串每个字段向左补齐
-                                    String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
-
-                                    for(int i=0;i < value.length();i++) {
-                                        if(!sourcePlaceholders.equals(value.charAt(i))){
-                                            value = value.substring(i);
-                                        }
-                                    }
-
-                                    List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-                                    Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
-                                    targetElement.setText(value);
-
-                                    xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
-                                } break;
-                            }
-                        }
-                    }
-                    //响应报文内容
+                    manipulateXmlMessage(String.valueOf(sourceFlStr), targetRoot, mappingInfoList);
                     responseMsgStr = XmlUtils.format(targetXml.asXML());
                     logger.info("返回xml报文：" + responseMsgStr);
-                }else if(JSON_STR.equals(targetMsgType)){
-                    JSONObject targetJsonObj = jsonMsgCreate(nodeInfoList);
-                    logger.info("生成模板报文为：", JsonUtils.format(targetJsonObj));
-                    for(MocksysMappingInfo rule : list){
-                        Integer sourceLocation = rule.getSourceLocation();
-                        Integer sourceLength = rule.getSourceLength();
-                        Integer sourceLoopCount = rule.getSourceLoopCount();
-                        Integer sourceLoopLength = rule.getSourceLoopLength();
-                        String targetPath = rule.getTargetPath();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
+                } else if (JSON_STR.equals(targetMsgType)) {
+                    JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                    logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
-                                    parameterJsonMap.remove("sourcePlaceholders");
-                                    // 一般视定长字符串每个字段向左补齐
-                                    String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
-
-                                    for(int i=0;i < value.length();i++) {
-                                        if(!sourcePlaceholders.equals(value.charAt(i))){
-                                            value = value.substring(i);
-                                        }
-                                    }
-
-                                    JSONPath.set(targetJsonObj, targetPath, value);
-                                    jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
-                                } break;
-                            }
-                        }
-                    }
+                    manipulateJsonMessage(String.valueOf(sourceFlStr), targetJsonObj, mappingInfoList);
                     responseMsgStr = JsonUtils.format(targetJsonObj);
                     logger.info("返回json报文：" + responseMsgStr);
-                }else if(FLSTR_STR.equals(targetMsgType)){
-                    StringBuffer targetFlStr = flStrMsgCreate(nodeInfoList);
-                    logger.info("生成模板报文为：", targetFlStr.toString());
+                } else if (FLSTR_STR.equals(targetMsgType)) {
+                    StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                    logger.info("生成模板报文为：" + targetFlStr);
 
-                    for(MocksysMappingInfo rule : list){
-                        Integer sourceLocation = rule.getSourceLocation();
-                        Integer sourceLength = rule.getSourceLength();
-                        Integer sourceLoopCount = rule.getSourceLoopCount();
-                        Integer sourceLoopLength = rule.getSourceLoopLength();
-                        Integer targetLocation = rule.getTargetLocation();
-                        Integer targetLength = rule.getTargetLength();
-                        Integer targetLoopCount = rule.getTargetLoopCount();
-                        Integer targetLoopLength = rule.getTargetLoopLength();
-                        String sign = rule.getTargetSign();
-                        String action = rule.getAction();
-                        String operate = rule.getOperate();
-                        String parameter = rule.getParameter();
-
-                        if(null != action && !"".equals(action)) {
-                            switch (action) {
-                                // 01字段值映射
-                                case "01": {
-                                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
-                                    if(null != parameter){
-                                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
-                                    }
-
-                                    String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
-                                    parameterJsonMap.remove("sourcePlaceholders");
-                                    String targetPlaceholders = parameterJsonMap.get("targetPlaceholders");
-                                    parameterJsonMap.remove("targetPlaceholders");
-
-                                    String targetValue = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
-
-                                    for(int i=0;i < targetValue.length();i++) {
-                                        if(!sourcePlaceholders.equals(targetValue.charAt(i))){
-                                            targetValue = targetValue.substring(i);
-                                        }
-                                    }
-
-                                    flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, targetValue, targetPlaceholders, targetFlStr);
-
-//                                        // 判断目标字段是否为循环字段
-//                                        if("0".equals(sign)){
-//                                            // 不是循环字段
-//                                            String targetStr = StringUtils.leftPad("1", 5, "0");
-//                                        }else{
-//
-//                                        }
-
-                                } break;
-                            }
-                        }
-                    }
-                    //响应报文内容
-                    logger.info("返回json报文：" + targetFlStr);
-                    return targetFlStr.toString();
-                }else{
+                    manipulateFlStrMessage(String.valueOf(sourceFlStr), targetFlStr, mappingInfoList);
+                    responseMsgStr = targetFlStr.toString();
+                    logger.info("返回json报文：" + responseMsgStr);
+                } else {
                     logger.error("报文类型判断错误，请检查！");
                 }
-            }else{
-                logger.error("交易码：" + targetBusiCode + ",报文类型：" + targetMsgType + "不存在当前类型报文模板！");
+            } else {
+                logger.error("交易码：" + targetBusiCode + ", 报文类型：" + targetMsgType + "不存在当前类型报文模板！");
             }
         }else{
             logger.error("当前业务(业务号：" + busiCode + ";报文类型：" + XML_STR + ")下没有配置映射规则");
@@ -773,6 +282,53 @@ public class MsgMockServiceImpl implements IMsgMockService {
         return responseMsgStr;
     }
 
+    /**
+     * 请求报文信息落表
+     * @param reqMsg
+     * @param msgType
+     * @param busiCode
+     */
+    private void saveRequestToDatabase(String reqMsg, String msgType, String busiCode) {
+        try {
+            MocksysMessagesInfo msgInfoDto = new MocksysMessagesInfo();
+            msgInfoDto.setId(UUIDUtils.get32UUID());
+            msgInfoDto.setMsgType(msgType);
+            msgInfoDto.setReqMsg(reqMsg);
+            msgInfoDto.setReqDateTime(DateUtils.getDateTime());
+            msgInfoDto.setBusiCode(busiCode);
+            int id = mocksysMessagesInfoMapper.insertMocksysMessagesInfo(msgInfoDto);
+            if (id == -1) {
+                logger.info("报文落表失败");
+            }
+        } catch (Exception e) {
+            logger.error("报文落表失败：" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 查询映射规则表，获取映射规则
+     * @param msgType
+     * @param busiCode
+     * @return
+     */
+    private List<MocksysMappingInfo> getMappingInfoList(String msgType, String busiCode) {
+        MocksysMappingInfoExample example = new MocksysMappingInfoExample();
+        MocksysMappingInfoExample.Criteria criteria = example.createCriteria();
+        criteria.andSourceBusiCodeEqualTo(busiCode);
+        criteria.andSourceMsgTypeEqualTo(msgType);
+        return  mocksysMappingInfoDAO.selectByExample(example);
+    }
+
+    /**
+     * 通过反射机制，调用定长字符串类型报文 节点值 处理函数
+     * @param operate
+     * @param parameterJsonMap
+     * @param targetLocation
+     * @param targetLength
+     * @param targetValue
+     * @param placeholders
+     * @param targetFlStr
+     */
     private void flStrMsgDoFunction(String operate, LinkedHashMap<String, String> parameterJsonMap, Integer targetLocation, Integer targetLength, String targetValue, String placeholders, StringBuffer targetFlStr) {
         if(null != operate && !"".equals(operate)) {
             Object[] parameters = new Object[parameterJsonMap.size() + 5];
@@ -810,6 +366,13 @@ public class MsgMockServiceImpl implements IMsgMockService {
         }
     }
 
+    /**
+     * 通过反射机制，调用json类型报文 节点值 处理函数
+     * @param operate
+     * @param parameterJsonMap
+     * @param targetJsonObj
+     * @param targetPath
+     */
     private void jsonNodeDoFunction(String operate, LinkedHashMap<String, String> parameterJsonMap, Object targetJsonObj, String targetPath) {
         if(null != operate && !"".equals(operate)) {
             Object[] parameters = new Object[parameterJsonMap.size() + 2];
@@ -843,6 +406,12 @@ public class MsgMockServiceImpl implements IMsgMockService {
         }
     }
 
+    /**
+     * 通过反射机制，调用xml类型报文 节点值 处理函数
+     * @param operate
+     * @param parameterJsonMap
+     * @param targetElement
+     */
     private void xmlNodeDoFunction(String operate, LinkedHashMap<String, String> parameterJsonMap, Element targetElement) {
         if(null != operate && !"".equals(operate)){
             Object[] parameters = new Object[parameterJsonMap.size() + 1];
@@ -874,8 +443,521 @@ public class MsgMockServiceImpl implements IMsgMockService {
         }
     }
 
+    /**
+     * 目标报文模板为xml，按照映射规则，组装处理目标报文
+     * @param sourceData
+     * @param targetRoot
+     * @param mappingInfoList
+     */
+    private void manipulateXmlMessage(Object sourceData, Element targetRoot, List<MocksysMappingInfo> mappingInfoList) {
+        for (MocksysMappingInfo rule : mappingInfoList) {
+            String sourcePath = rule.getSourcePath();
+            String sourceSign = rule.getSourceSign();
+            String targetPath = rule.getTargetPath();
+            String targetSign = rule.getTargetSign();
+            String action = rule.getAction();
+            String operate = rule.getOperate();
+            String parameter = rule.getParameter();
 
-    /***
+            if (null != action && !"".equals(action)) {
+                switch (action) {
+                    // 01字段值映射
+                    case "01": {
+                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                        if (null != parameter) {
+                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>() {
+                            });//关键所在，转化为有序的
+                        }
+
+                        /** 判断原报文类型，按照不同类型进行对应处理，取出所需字段值，
+                         *  再放到目标报文模板中，
+                         *  最后按照处理函数对目标报文进行处理 */
+                        List<Element> targetElementList = targetRoot.selectNodes(targetPath);
+                        Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
+
+                        if (sourceData instanceof Element) {
+                            logger.info("原报文 是 xml 类型");
+                            Element sourceRoot = (Element) sourceData;
+                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                            String value = valueElement.getText();
+                            targetElement.setText(value);
+                        } else if (sourceData instanceof JSONObject) {
+                            logger.info("原报文 是 json 类型");
+                            JSONObject sourceJsonObject = (JSONObject) sourceData;
+                            String value = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
+
+                            targetElement.setText(value);
+                        } else if (sourceData instanceof String){
+                            logger.info("原报文 是 定长字符串 类型");
+
+                            Integer sourceLocation = rule.getSourceLocation();
+                            Integer sourceLength = rule.getSourceLength();
+                            Integer sourceLoopCount = rule.getSourceLoopCount();
+                            Integer sourceLoopLength = rule.getSourceLoopLength();
+
+                            /**todo 应当考虑定长字符串循环字段存在时的处理方式*/
+
+                            // 一般视定长字符串每个字段向左补齐
+                            String sourceFlStr = (String) sourceData;
+                            String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
+
+                            /**原报文定长字符串补位用特殊字符*/
+                            String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
+                            parameterJsonMap.remove("sourcePlaceholders");
+                            for(int i=0;i < value.length();i++) {
+                                if(!sourcePlaceholders.equals(value.charAt(i))){
+                                    value = value.substring(i);
+                                    break;
+                                }
+                            }
+                            targetElement.setText(value);
+                        }
+                        xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
+                    }
+                    break;
+                    case "02": {
+                        List<Element> targetElementList = targetRoot.selectNodes(targetPath);
+                        Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
+
+                        /** 原报类型判断 */
+                        if (sourceData instanceof Element) {
+                            logger.info("原报文 是 xml 类型");
+                            Element sourceRoot = (Element) sourceData;
+                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                            String value = valueElement.getText();
+                            targetElement.setName(parameter);
+                            targetElement.setText(value);
+                        } else if (sourceData instanceof JSONObject) {
+                            logger.info("原报文 是 json 类型");
+                        } else if (sourceData instanceof String){
+                            logger.info("原报文 是 定长字符串 类型");
+                        }
+                    }
+                    break;
+                    case "03": {
+                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                        if (null != parameter) {
+                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>() {
+                            });//关键所在，转化为有序的
+                        }
+
+                        String attributeName = parameterJsonMap.get("attrbuiteName");
+                        String isNewElement = parameterJsonMap.get("isNewElement");
+                        String newElementName = parameterJsonMap.get("newElementName");
+                        parameterJsonMap.remove("attrbuiteName");
+                        parameterJsonMap.remove("isNewElement");
+                        parameterJsonMap.remove("newElementName");
+
+                        /** 原报类型判断 */
+                        if (sourceData instanceof Element) {
+                            logger.info("原报文 是 xml 类型");
+                            Element sourceRoot = (Element) sourceData;
+                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                            Attribute sourceAttribute = valueElement.attribute(attributeName);
+
+                            if ("0".equals(isNewElement)) {
+                                // 不是新节点，是 映射到现有节点
+                                List<Element> targetElementList = targetRoot.selectNodes(targetPath);
+                                Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
+                                targetElement.setText(sourceAttribute.getValue());
+
+                                xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
+                            } else if ("1".equals(isNewElement)) {
+                                // 是新节点
+                                List<Element> targetFatherElementList = targetRoot.selectNodes(targetPath);
+                                Element targetFatherElement = targetFatherElementList.get(Integer.valueOf(targetSign));
+                                Element targetElement = targetFatherElement.addElement(newElementName);
+                                targetElement.setText(sourceAttribute.getValue());
+
+                                xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
+                            }
+                        } else if (sourceData instanceof JSONObject) {
+                            logger.info("原报文 是 json 类型");
+                        } else if (sourceData instanceof String){
+                            logger.info("原报文 是 定长字符串 类型");
+                        }
+                    }
+                    break;
+                    case "04": {
+                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                        if (null != parameter) {
+                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>() {
+                            });//关键所在，转化为有序的
+                        }
+
+                        String newElementName = parameterJsonMap.get("newElementName");
+                        String newElementValue = parameterJsonMap.get("newElementValue");
+                        String isNewValue = parameterJsonMap.get("isNewValue");
+                        parameterJsonMap.remove("newElementName");
+                        parameterJsonMap.remove("newElementValue");
+                        parameterJsonMap.remove("isNewValue");
+
+                        if ("0".equals(isNewValue)) {
+                            // 从原报文节点中获取value
+
+                            /** 原报类型判断 */
+                            if (sourceData instanceof Element) {
+                                logger.info("原报文 是 xml 类型");
+                                Element sourceRoot = (Element) sourceData;
+                                List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                                Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                                newElementValue = valueElement.getText();
+                            } else if (sourceData instanceof JSONObject) {
+                                logger.info("原报文 是 json 类型");
+                            } else if (sourceData instanceof String){
+                                logger.info("原报文 是 定长字符串 类型");
+                            }
+                        }
+
+                        // 使用新的value
+                        List<Element> targetFatherElementList = targetRoot.selectNodes(targetPath);
+                        Element targetFatherElement = targetFatherElementList.get(Integer.valueOf(targetSign));
+                        Element targetElement = targetFatherElement.addElement(newElementName);
+                        targetElement.setText(newElementValue);
+
+                        xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 目标报文模板为json，按照映射规则，组装处理目标报文
+     * @param sourceData
+     * @param targetJsonObj
+     * @param mappingInfoList
+     */
+    private void manipulateJsonMessage(Object sourceData, JSONObject targetJsonObj, List<MocksysMappingInfo> mappingInfoList){
+        for(MocksysMappingInfo rule : mappingInfoList){
+            String sourcePath = rule.getSourcePath();
+            String sourceSign = rule.getSourceSign();
+            String targetPath = rule.getTargetPath();
+            String action = rule.getAction();
+            String operate = rule.getOperate();
+            String parameter = rule.getParameter();
+
+            if(null != action && !"".equals(action)) {
+                switch (action) {
+                    // 01字段值映射
+                    case "01": {
+                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                        if(null != parameter){
+                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
+                        }
+
+                        /** 原报类型判断 */
+                        if (sourceData instanceof Element) {
+                            logger.info("原报文 是 xml 类型");
+                            Element sourceRoot = (Element) sourceData;
+                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                            String value = valueElement.getText();
+                            JSONPath.set(targetJsonObj, targetPath, value);
+                        } else if (sourceData instanceof JSONObject) {
+                            logger.info("原报文 是 json 类型");
+                            JSONObject sourceJsonObject = (JSONObject) sourceData;
+                            String value = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
+
+                            JSONPath.set(targetJsonObj, targetPath, value);
+                        } else if (sourceData instanceof String){
+                            logger.info("原报文 是 定长字符串 类型");
+                            Integer sourceLocation = rule.getSourceLocation();
+                            Integer sourceLength = rule.getSourceLength();
+                            Integer sourceLoopCount = rule.getSourceLoopCount();
+                            Integer sourceLoopLength = rule.getSourceLoopLength();
+
+                            // 一般视定长字符串每个字段向左补齐
+                            String sourceFlStr = (String) sourceData;
+                            String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
+
+                            /**原报文定长字符串补位用特殊字符*/
+                            String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
+                            parameterJsonMap.remove("sourcePlaceholders");
+                            for (int i = 0; i < value.length(); i++) {
+                                if (!sourcePlaceholders.equals(value.charAt(i))) {
+                                    value = value.substring(i);
+                                }
+                            }
+
+                            JSONPath.set(targetJsonObj, targetPath, value);
+                        }
+                        jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
+                    } break;
+                    /** 不同报文类型间不支持字段名修改 */
+                    case "03": {
+                        LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                        if(null != parameter){
+                            JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
+                        }
+
+                        String attributeName = parameterJsonMap.get("attrbuiteName");
+                        parameterJsonMap.remove("attrbuiteName");
+
+                        /** 原报类型判断 */
+                        if (sourceData instanceof Element) {
+                            logger.info("原报文 是 xml 类型");
+                            Element sourceRoot = (Element) sourceData;
+                            List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                            Attribute sourceAttribute = valueElement.attribute(attributeName);
+                            // 只支持映射到现有节点
+                            JSONPath.set(targetJsonObj, targetPath, sourceAttribute.getValue());
+                        } else if (sourceData instanceof JSONObject) {
+                            logger.info("原报文 是 json 类型");
+                        } else if (sourceData instanceof String){
+                            logger.info("原报文 是 定长字符串 类型");
+                        }
+
+                        jsonNodeDoFunction(operate, parameterJsonMap, targetJsonObj, targetPath);
+                        /** 不同报文类型，应该直接维护报文模板，做字段映射处理，不应该支持动态添加字段 */
+                    } break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 目标报文模板为定长字符串，按照映射规则，组装处理目标报文
+     * @param sourceData
+     * @param targetFlStr
+     * @param mappingInfoList
+     */
+    private void manipulateFlStrMessage(Object sourceData, StringBuffer targetFlStr, List<MocksysMappingInfo> mappingInfoList){
+        for(MocksysMappingInfo rule : mappingInfoList){
+            String sourcePath = rule.getSourcePath();
+            String sourceSign = rule.getSourceSign();
+            Integer targetLocation = rule.getTargetLocation();
+            Integer targetLength = rule.getTargetLength();
+            Integer targetLoopCount = rule.getTargetLoopCount();
+            Integer targetLoopLength = rule.getTargetLoopLength();
+            String sign = rule.getTargetSign();
+            String action = rule.getAction();
+            String operate = rule.getOperate();
+            String parameter = rule.getParameter();
+
+            if (action == null || action.isEmpty()) {
+                continue;
+            }
+
+            switch (action) {
+                // 01字段值映射
+                case "01": {
+                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                    if(null != parameter){
+                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
+                    }
+
+                    /** 目标报文定长字符串补位用特殊字符 */
+                    String targetPlaceholders = parameterJsonMap.get("targetPlaceholders");
+                    parameterJsonMap.remove("targetPlaceholders");
+//                        // 判断目标字段是否为循环字段
+//                        if("0".equals(sign)){
+//                            // 不是循环字段
+//                            String targetStr = StringUtils.leftPad("1", 5, "0");
+//                        }else{
+//
+//                        }
+                    /** 原报类型判断 */
+                    String targetValue = "";
+                    /** 原报类型判断 */
+                    if (sourceData instanceof Element) {
+                        logger.info("原报文 是 xml 类型");
+                        Element sourceRoot = (Element) sourceData;
+                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                        targetValue = valueElement.getText();
+                    } else if (sourceData instanceof JSONObject) {
+                        logger.info("原报文 是 json 类型");
+                        JSONObject sourceJsonObject = (JSONObject) sourceData;
+                        targetValue = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
+                    } else if (sourceData instanceof String){
+                        logger.info("原报文 是 定长字符串 类型");
+
+                        Integer sourceLocation = rule.getSourceLocation();
+                        Integer sourceLength = rule.getSourceLength();
+                        Integer sourceLoopCount = rule.getSourceLoopCount();
+                        Integer sourceLoopLength = rule.getSourceLoopLength();
+
+                        String sourceFlStr = (String) sourceData;
+                        targetValue = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
+
+                        /**原报文定长字符串补位用特殊字符*/
+                        String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
+                        parameterJsonMap.remove("sourcePlaceholders");
+                        for (int i = 0; i < targetValue.length(); i++) {
+                            if(!sourcePlaceholders.equals(targetValue.charAt(i))){
+                                targetValue = targetValue.substring(i);
+                            }
+                        }
+                    }
+
+                    flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, targetValue, targetPlaceholders, targetFlStr);
+                } break;
+                /** 不同报文类型间不支持字段名修改 */
+                case "03": {
+                    LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
+                    if(null != parameter){
+                        JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
+                        parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
+                    }
+
+                    String attributeName = parameterJsonMap.get("attrbuiteName");
+                    parameterJsonMap.remove("attrbuiteName");
+                    String placeholders = parameterJsonMap.get("placeholders");
+                    parameterJsonMap.remove("placeholders");
+
+                    String sourceAttributeValue = "";
+
+                    /** 原报类型判断 */
+                    if (sourceData instanceof Element) {
+                        logger.info("原报文 是 xml 类型");
+                        Element sourceRoot = (Element) sourceData;
+                        List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                        Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+                        Attribute sourceAttribute = valueElement.attribute(attributeName);
+                        sourceAttributeValue = sourceAttribute.getValue();
+                    } else if (sourceData instanceof JSONObject) {
+                        logger.info("原报文 是 json 类型");
+                    } else if (sourceData instanceof String){
+                        logger.info("原报文 是 定长字符串 类型");
+                    }
+
+                    // 只支持映射到现有节点
+                    flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, sourceAttributeValue, placeholders, targetFlStr);
+                    /** 不同报文类型，应该直接维护报文模板，做字段映射处理，不应该支持动态添加字段 */
+                } break;
+            }
+        }
+    }
+
+    /**
+     * 按照报文模板数据，生成xml报文对象
+     * @param nodeInfoList
+     * @return
+     */
+    public Document createXmlMessage (List < MocksysTemplateNodeInfo > nodeInfoList) {
+        // 创建一个新的 XML 文档
+        Document targetXml = DocumentHelper.createDocument();
+        for (MocksysTemplateNodeInfo item : nodeInfoList) {
+            if ("0".equals(item.getNumber())) {
+                // 如果是根节点，则直接创建
+                targetXml.addElement(item.getFieldName());
+            } else {
+                // 如果是子节点，则在父节点下创建
+                Element root = targetXml.getRootElement();
+                String path = item.getPath();
+                // 获取父节点路径
+                String parentPath = path.substring(0, path.lastIndexOf("/"));
+                List<Element> parentElementList = root.selectNodes(parentPath);
+                if (null != parentElementList && parentElementList.size() > 0) {
+                    // 找到父节点，创建子节点
+                    Element parentElement = parentElementList.get(Integer.valueOf(item.getSign()));
+                    parentElement.addElement(item.getFieldName());
+                } else {
+                    // 未找到父节点，记录错误日志
+                    logger.error(parentPath + "路径下未查到对应节点");
+                }
+            }
+        }
+        return targetXml;
+    }
+
+    /**
+     * 按照报文模板数据，生成json报文对象
+     * @param nodeInfoList
+     * @return
+     */
+    public JSONObject createJsonMessage (List < MocksysTemplateNodeInfo > nodeInfoList) {
+        // 创建根 JSON 对象
+        JSONObject rootObj = new JSONObject();
+
+        for (MocksysTemplateNodeInfo item : nodeInfoList) {
+            // 如果当前节点不是子节点，即为对象或数组
+            if ("0".equals(item.getIsSonNode())) {
+                // 如果节点为数组元素
+                if ("1".equals(item.getSign())) {
+                    // 创建新的 JSON 数组
+                    JSONArray newArray = new JSONArray();
+
+                    // 获取路径信息
+                    String path = item.getPath();
+                    String parentPath = path.substring(0, path.lastIndexOf("."));
+
+                    // 如果当前节点为根节点下的数组元素
+                    if ("$".equals(parentPath)) {
+                        rootObj.put(item.getFieldName(), newArray);
+                    } else {
+                        // 否则，找到父节点，并将新数组加入到父节点中
+                        JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
+                        parentObj.put(item.getFieldName(), newArray);
+                    }
+                } else {
+                    // 如果节点为对象元素
+                    JSONObject newObj = new JSONObject();
+
+                    // 获取路径信息
+                    String path = item.getPath();
+                    if (item.getFieldName().contains("[")) {
+                        String parentPath = path.substring(0, path.lastIndexOf("["));
+
+                        JSONArray parentObj = (JSONArray) JSONPath.read(rootObj.toString(), parentPath);
+                        parentObj.add(newObj);
+                    } else {
+                        String parentPath = path.substring(0, path.lastIndexOf("."));
+
+                        if ("$".equals(parentPath)) {
+                            rootObj.put(item.getFieldName(), newObj);
+                        } else {
+                            JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
+                            parentObj.put(item.getFieldName(), newObj);
+                        }
+                    }
+                }
+            }
+            // 如果当前节点是子节点，则代表当前元素为对象属性，直接添加属性
+            else {
+                // 获取路径信息
+                String path = item.getPath();
+                String parentPath = path.substring(0, path.lastIndexOf("."));
+
+                // 找到父节点，并将属性加入到父节点中
+                JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
+                parentObj.put(item.getFieldName(), "");
+            }
+        }
+
+        return rootObj;
+    }
+
+    /**
+     * 按照报文模板数据，生成定长字符串报文对象
+     * @param nodeInfoList
+     * @return
+     */
+    public StringBuffer createFlStrMessage (List < MocksysTemplateNodeInfo > nodeInfoList) {
+        StringBuffer msg = new StringBuffer();
+        for (MocksysTemplateNodeInfo item : nodeInfoList) {
+            if ("1".equals(item.getSign())) {
+                msg.append(StringUtils.repeat("0", (item.getLength() + item.getLoopCount() * item.getLoopLength())));
+            } else {
+                msg.append(StringUtils.repeat("0", item.getLength()));
+            }
+        }
+        return msg;
+    }
+
+    /**
      * xml报文节点落表
      * @param busiType
      * @param channel
@@ -883,13 +965,13 @@ public class MsgMockServiceImpl implements IMsgMockService {
      * @param Xpath
      * @param parentId
      */
-    public void getXmlNodes(String busiType, String channel, Element node, String Xpath, int parentId){
+    public void getXmlNodes (String busiType, String channel, Element node, String Xpath,int parentId){
         Xpath = Xpath + "/" + node.getName();
         Integer no = pathMap.get(Xpath);
-        if(null != no){
+        if (null != no) {
             pathMap.remove(Xpath);
             no++;
-        }else{
+        } else {
             no = 0;
         }
 
@@ -922,21 +1004,21 @@ public class MsgMockServiceImpl implements IMsgMockService {
 
         //递归遍历当前节点所有的子节点
         List<Element> listElement = node.elements();//所有一级子节点的list
-        if(null != listElement && listElement.size() > 0){
+        if (null != listElement && listElement.size() > 0) {
             mocksysTemplateNodeInfo.setIsSonNode(false);
             mocksysTemplateNodeInfoDAO.insertSelective(mocksysTemplateNodeInfo);
-            for(Element e:listElement){//遍历所有一级子节点
+            for (Element e : listElement) {//遍历所有一级子节点
                 parentId = mocksysTemplateNodeInfo.getId();
                 this.getXmlNodes(busiType, channel, e, Xpath, parentId);//递归
             }
-        }else{
+        } else {
             logger.info("当前节点为叶子节点");
             mocksysTemplateNodeInfo.setIsSonNode(true);
             mocksysTemplateNodeInfoDAO.insertSelective(mocksysTemplateNodeInfo);
         }
     }
 
-    /***
+    /**
      * json报文节点落表
      * @param busiCode
      * @param channel
@@ -944,7 +1026,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
      * @param Xpath
      * @param parentId
      */
-    public void getJsonNodes(String busiCode, String channel, JSONObject obj, String Xpath, int parentId){
+    public void getJsonNodes (String busiCode, String channel, JSONObject obj, String Xpath,int parentId){
         for (String key : obj.keySet()) {    // 最外层的key
             StringBuilder objPath = new StringBuilder(Xpath);
             /**处理路径**/
@@ -1014,11 +1096,11 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         mocksysTemplateNodeInfoArray.setNumber(String.valueOf(msgNnumber++));
 
                         JSONObject o1 = jsonArray.getJSONObject(i);
-                        if(null != o1.keySet()){
+                        if (null != o1.keySet()) {
                             mocksysTemplateNodeInfoArray.setIsSonNode(false);
                             mocksysTemplateNodeInfoDAO.insert(mocksysTemplateNodeInfoArray);
                             getJsonNodes(busiCode, channel, o1, arryPath.toString(), mocksysTemplateNodeInfoArray.getId());
-                        }else{
+                        } else {
                             mocksysTemplateNodeInfoArray.setIsSonNode(true);
                             mocksysTemplateNodeInfoDAO.insert(mocksysTemplateNodeInfoArray);
                         }
@@ -1028,30 +1110,30 @@ public class MsgMockServiceImpl implements IMsgMockService {
         }
     }
 
-    public List<NatureTree> getMsgTree(String busiCode, String msgType ){
+    public List<NatureTree> getMsgTree (String busiCode, String msgType ){
         List<NatureTree> theTree = new ArrayList<>();
-        if(null != busiCode && null != msgType){
+        if (null != busiCode && null != msgType) {
             MocksysTemplateNodeInfoExample example = new MocksysTemplateNodeInfoExample();
             MocksysTemplateNodeInfoExample.Criteria criteria = example.createCriteria();
             criteria.andBusiCodeEqualTo(busiCode);
             criteria.andMsgTypeEqualTo(msgType);
-            List <MocksysTemplateNodeInfo> list = mocksysTemplateNodeInfoDAO.selectByExample(example);
+            List<MocksysTemplateNodeInfo> list = mocksysTemplateNodeInfoDAO.selectByExample(example);
 
-            if( null != list && list.size() > 0){
+            if (null != list && list.size() > 0) {
                 theTree = makeNewTree(list, msgType);
             }
             logger.info("数据处理完毕");
             return theTree;
-        }else{
+        } else {
             logger.info("获取报文树失败，传递参数为空");
             return null;
         }
     }
 
-    private List<NatureTree> makeNewTree(List<MocksysTemplateNodeInfo> list, String msgType) {
+    private List<NatureTree> makeNewTree (List < MocksysTemplateNodeInfo > list, String msgType){
         List<NatureTree> theTree = new ArrayList<>();
-        if( msgType.equals(FLSTR_STR) ){
-            for(MocksysTemplateNodeInfo dto : list){
+        if (msgType.equals(FLSTR_STR)) {
+            for (MocksysTemplateNodeInfo dto : list) {
                 NatureTree natureTree = new NatureTree();
                 natureTree.setId(dto.getId());
                 natureTree.setParentId(null);
@@ -1068,8 +1150,8 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 natureTree.setLoopLength(dto.getLoopLength());
                 theTree.add(natureTree);
             }
-        }else{
-            for(MocksysTemplateNodeInfo dto : list){
+        } else {
+            for (MocksysTemplateNodeInfo dto : list) {
                 NatureTree natureTree = new NatureTree();
                 natureTree.setId(dto.getId());
                 natureTree.setParentId(dto.getParentId());
@@ -1081,26 +1163,26 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 natureTree.setLength(dto.getLength());
                 natureTree.setLoopCount(dto.getLoopCount());
                 natureTree.setLoopLength(dto.getLoopLength());
-                if(XML_STR.equals(msgType)){
+                if (XML_STR.equals(msgType)) {
                     natureTree.setPath(dto.getPath());
                     natureTree.setXpath(dto.getPath());
                     natureTree.setSign(dto.getSign());
-                }else{
+                } else {
                     natureTree.setSign("");
                     natureTree.setPath(dto.getPath());
                     natureTree.setXpath(dto.getPath().substring(1).replace(".", "/"));
                 }
-                if(dto.getIsSonNode()){
+                if (dto.getIsSonNode()) {
                     natureTree.setChildren(null);
-                }else{
+                } else {
                     List<NatureTree> childList = new ArrayList<>();
                     natureTree.setChildren(childList);
                 }
-                if(0 == dto.getParentId()){
+                if (0 == dto.getParentId()) {
                     theTree.add(natureTree);
                     continue;
                 }
-                if(null != theTree && theTree.size() > 0){
+                if (null != theTree && theTree.size() > 0) {
                     /** 把节点放在对应的位置上 */
                     workOnTreeNode(dto, theTree, natureTree);
                 }
@@ -1109,106 +1191,18 @@ public class MsgMockServiceImpl implements IMsgMockService {
         return theTree;
     }
 
-    private void workOnTreeNode(MocksysTemplateNodeInfo dto, List<NatureTree> parentTree, NatureTree natureTree) {
+    private void workOnTreeNode (MocksysTemplateNodeInfo dto, List < NatureTree > parentTree, NatureTree natureTree){
         Iterator<NatureTree> it = parentTree.iterator();
-        while (it.hasNext()){
+        while (it.hasNext()) {
             NatureTree n = it.next();
 
-            if (StringUtils.isNotNull(n.getId()) && n.getId() == dto.getParentId()){
+            if (StringUtils.isNotNull(n.getId()) && n.getId() == dto.getParentId()) {
                 n.getChildren().add(natureTree);
-            }else{
-                if(null != n.getChildren() && n.getChildren().size() > 0){
+            } else {
+                if (null != n.getChildren() && n.getChildren().size() > 0) {
                     workOnTreeNode(dto, n.getChildren(), natureTree);
                 }
             }
         }
-    }
-
-    public Document xmlMsgCreate(List<MocksysTemplateNodeInfo> nodeInfoList){
-        // 通过DocumentHelper.creatDocument()创建一个Document对象。
-        Document targetXml = DocumentHelper.createDocument();
-        for(MocksysTemplateNodeInfo item : nodeInfoList){
-            if( "0".equals(item.getNumber()) ){
-                // 创建根节点
-                targetXml.addElement(item.getFieldName());
-            }else{
-                // 获得根节点
-                Element root = targetXml.getRootElement();
-                String path = item.getPath();
-                String parentPath = path.substring(0, path.lastIndexOf("/"));
-                List<Element> parentElementList = root.selectNodes(parentPath);
-                if( null != parentElementList && parentElementList.size() > 0 ){
-                    Element parentElement = parentElementList.get(Integer.valueOf(item.getSign()));
-                    Element element = parentElement.addElement(item.getFieldName());
-                }else{
-                    logger.error(parentPath + "路径下未查到对应节点");
-                }
-            }
-        }
-        return targetXml;
-    }
-
-    public JSONObject jsonMsgCreate(List<MocksysTemplateNodeInfo> nodeInfoList){
-        JSONObject rootObj = new JSONObject();
-        for(MocksysTemplateNodeInfo item : nodeInfoList){
-            // 如果不为子节点，则创建新对象
-            if("0".equals(item.getIsSonNode())){
-                if("1".equals(item.getSign())){
-                    // 认为当前节点为数组元素
-                    JSONArray newArray = new JSONArray();
-
-                    String path = item.getPath();
-                    String parentPath = path.substring(0, path.lastIndexOf("."));
-                    if("$".equals(parentPath)){
-                        rootObj.put(item.getFieldName(), newArray);
-                    }else{
-                        JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                        parentObj.put(item.getFieldName(), newArray);
-                    }
-                }else{
-                    // 认为当前元素是对象元素
-                    JSONObject newObj = new JSONObject();
-                    if(item.getFieldName().contains("[")){
-                        String path = item.getPath();
-                        String parentPath = path.substring(0, path.lastIndexOf("["));
-
-                        JSONArray parentObj = (JSONArray) JSONPath.read(rootObj.toString(), parentPath);
-                        parentObj.add(newObj);
-                    }else{
-                        String path = item.getPath();
-                        String parentPath = path.substring(0, path.lastIndexOf("."));
-
-                        if("$".equals(parentPath)){
-                            rootObj.put(item.getFieldName(), newObj);
-                        }else{
-                            JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                            parentObj.put(item.getFieldName(), newObj);
-                        }
-                    }
-                }
-            }
-            // 如果是子节点，则代表当前元素为对象属性
-            else{
-                String path = item.getPath();
-                String parentPath = path.substring(0, path.lastIndexOf("."));
-
-                JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                parentObj.put(item.getFieldName(), "");
-            }
-        }
-
-        return rootObj;
-    }
-
-    public StringBuffer flStrMsgCreate(List<MocksysTemplateNodeInfo> nodeInfoList){
-        StringBuffer msg = new StringBuffer();
-        for(MocksysTemplateNodeInfo item : nodeInfoList){
-            if("1".equals(item.getSign())){
-                msg.append(StringUtils.repeat("0", (item.getLength() + item.getLoopCount() * item.getLoopLength())));
-            }else{
-                msg.append(StringUtils.repeat("0", item.getLength()));
-            }
-        }
-        return msg;
     }
 }

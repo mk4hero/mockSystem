@@ -62,6 +62,8 @@
                   <svg viewBox="64 64 896 896" data-icon="apartment" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                     <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
                 <span>{{ data.label }}</span>
+                <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
+
               </div>
 
               <div v-else>
@@ -71,6 +73,7 @@
                   <svg viewBox="64 64 896 896" data-icon="apartment" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                     <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
                 <span>{{ data.label }}</span>
+                <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
               </div>
             </template>
 
@@ -82,6 +85,7 @@
                   <svg viewBox="64 64 896 896" data-icon="deployment-unit" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                     <path d="M888.3 693.2c-42.5-24.6-94.3-18-129.2 12.8l-53-30.7V523.6c0-15.7-8.4-30.3-22-38.1l-136-78.3v-67.1c44.2-15 76-56.8 76-106.1 0-61.9-50.1-112-112-112s-112 50.1-112 112c0 49.3 31.8 91.1 76 106.1v67.1l-136 78.3c-13.6 7.8-22 22.4-22 38.1v151.6l-53 30.7c-34.9-30.8-86.8-37.4-129.2-12.8-53.5 31-71.7 99.4-41 152.9 30.8 53.5 98.9 71.9 152.2 41 42.5-24.6 62.7-73 53.6-118.8l48.7-28.3 140.6 81c6.8 3.9 14.4 5.9 22 5.9s15.2-2 22-5.9L674.5 740l48.7 28.3c-9.1 45.7 11.2 94.2 53.6 118.8 53.3 30.9 121.5 12.6 152.2-41 30.8-53.6 12.6-122-40.7-152.9zm-673 138.4a47.6 47.6 0 0 1-65.2-17.6c-13.2-22.9-5.4-52.3 17.5-65.5a47.6 47.6 0 0 1 65.2 17.6c13.2 22.9 5.4 52.3-17.5 65.5zM522 463.8zM464 234a48.01 48.01 0 0 1 96 0 48.01 48.01 0 0 1-96 0zm170 446.2l-122 70.3-122-70.3V539.8l122-70.3 122 70.3v140.4zm239.9 133.9c-13.2 22.9-42.4 30.8-65.2 17.6-22.8-13.2-30.7-42.6-17.5-65.5s42.4-30.8 65.2-17.6c22.9 13.2 30.7 42.5 17.5 65.5z"></path></svg></i>
                 <span>{{ data.label }}</span>
+                <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
               </div>
             </template>
           </span>
@@ -144,31 +148,49 @@
             <span slot-scope="{ data }">
               <template v-if="data.children">
                 <div v-if="data.children.length > 0">
-                  <!-- <i class="el-icon-folder" :style="'font-size: 14px; padding: 0 5px 0 5px'"/> -->
+
+                  <!-- 这是一个小图标 -->
                   <i :style="'font-size: 13px; padding: 0 5px 0 5px'">
                     <svg viewBox="64 64 896 896" data-icon="apartment" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                       <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
+
                   <span>{{ data.label }}</span>
+                  <el-button type="primary" round size="mini" v-if="data.havaRule"
+                             @click="heightLight(data)"
+                             style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
+<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
                 </div>
 
                 <div v-else>
                   <i class="leaf-node-line"></i>
-                  <!-- <i class="el-icon-folder" :style="'padding: 0 5px 0 5px'"/> -->
+
+                  <!-- 这是一个小图标 -->
                   <i :style="'font-size: 13px; padding: 0 5px 0 5px'">
                     <svg viewBox="64 64 896 896" data-icon="apartment" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                       <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
+
                   <span>{{ data.label }}</span>
+                  <el-button type="primary" round size="mini" v-if="data.havaRule"
+                             @click="heightLight(data)"
+                             style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
+<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
                 </div>
               </template>
 
               <template v-else>
                 <div style="margin-left: 0px;">
                   <i class="leaf-node-line"></i>
-                  <!-- <i class="el-icon-document" :style="'padding: 0 5px 0 5px'"></i> -->
+
+                  <!-- 这是一个小图标 -->
                   <i :style="'font-size: 13px; padding: 0 5px 0 5px'">
                     <svg viewBox="64 64 896 896" data-icon="deployment-unit" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class="">
                       <path d="M888.3 693.2c-42.5-24.6-94.3-18-129.2 12.8l-53-30.7V523.6c0-15.7-8.4-30.3-22-38.1l-136-78.3v-67.1c44.2-15 76-56.8 76-106.1 0-61.9-50.1-112-112-112s-112 50.1-112 112c0 49.3 31.8 91.1 76 106.1v67.1l-136 78.3c-13.6 7.8-22 22.4-22 38.1v151.6l-53 30.7c-34.9-30.8-86.8-37.4-129.2-12.8-53.5 31-71.7 99.4-41 152.9 30.8 53.5 98.9 71.9 152.2 41 42.5-24.6 62.7-73 53.6-118.8l48.7-28.3 140.6 81c6.8 3.9 14.4 5.9 22 5.9s15.2-2 22-5.9L674.5 740l48.7 28.3c-9.1 45.7 11.2 94.2 53.6 118.8 53.3 30.9 121.5 12.6 152.2-41 30.8-53.6 12.6-122-40.7-152.9zm-673 138.4a47.6 47.6 0 0 1-65.2-17.6c-13.2-22.9-5.4-52.3 17.5-65.5a47.6 47.6 0 0 1 65.2 17.6c13.2 22.9 5.4 52.3-17.5 65.5zM522 463.8zM464 234a48.01 48.01 0 0 1 96 0 48.01 48.01 0 0 1-96 0zm170 446.2l-122 70.3-122-70.3V539.8l122-70.3 122 70.3v140.4zm239.9 133.9c-13.2 22.9-42.4 30.8-65.2 17.6-22.8-13.2-30.7-42.6-17.5-65.5s42.4-30.8 65.2-17.6c22.9 13.2 30.7 42.5 17.5 65.5z"></path></svg></i>
+
                   <span>{{ data.label }}</span>
+                  <el-button type="primary" round size="mini" v-if="data.havaRule"
+                             @click="heightLight(data)"
+                             style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
+<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
                 </div>
               </template>
             </span>
@@ -358,7 +380,6 @@
       </div>
     </el-dialog>
 
-
   </div>
 </template>
 
@@ -427,6 +448,8 @@ export default {
         children: "children",
         action: "",
         operate: "",
+        havaRule: false,
+        mappingNumber: 0,
       },
       leftQueryParams: {
         busiCode: "74215",
@@ -581,10 +604,58 @@ export default {
 
       mappingList(this.queryParams).then(response => {
           this.tableData = response.rows;
+          // 右侧树 进行处理，存在映射规则的节点增加标记
+          this.traverseRightTree(this.rightMsgOptions, "mappingHightLight");
+
           this.total = response.total;
           this.loading = false;
         }
       );
+    },
+    traverseRightTree(nodes, action) {
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(node => {
+        if(action == "mappingHightLight"){
+          for(let item of this.tableData){
+            if(item.targetNumber == node.number){
+              node.havaRule = true;
+              node.mappingNumber = item.sourceNumber;
+            }
+          }
+        }else if(action == "reloadHavaRule"){
+          node.havaRule = false;
+        }
+        if (node.children && node.children.length > 0) {
+          this.traverseRightTree(node.children, action);
+        }
+      });
+      // 这个动作是为了el-tree重新渲染
+      this.rightMsgOptions = [...this.rightMsgOptions]
+    },
+    traverseLeftTree(nodes, mappingNumber, action) {
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(node => {
+        if(action == "mappingHightLight"){
+          if(mappingNumber == node.number){
+            node.havaRule = !node.havaRule;
+          }
+        }else if(action == "reloadHavaRule"){
+          node.havaRule = false;
+        }
+
+        if (node.children && node.children.length > 0) {
+          this.traverseLeftTree(node.children, mappingNumber, action);
+        }
+      });
+      // 这个动作是为了el-tree重新渲染
+      this.rightMsgOptions = [...this.rightMsgOptions]
+    },
+
+    /** 通过映射关系，使左侧树节点高亮 */
+    heightLight(data){
+      this.traverseLeftTree(this.leftMsgOptions, data.mappingNumber, "mappingHightLight");
+      // 这个动作是为了el-tree重新渲染
+      this.leftMsgOptions = [...this.leftMsgOptions]
     },
     /** 获取映射函数列表 */
     getFuncList(){
@@ -610,6 +681,8 @@ export default {
     /** 刷新底部表格 */
     flushTableList(){
       if(this.leftTreeSelectFlag && this.rightTreeSelectFlag){
+        this.traverseLeftTree(this.leftMsgOptions, 0, "reloadHavaRule");
+        this.traverseRightTree(this.rightMsgOptions, "reloadHavaRule");
         this.getList();
       }
     },
@@ -700,9 +773,15 @@ export default {
           //   });
           // } else {
           addMapping(this.processing(this.loopForm)).then(response => {
-            this.$message('添加成功');
+            this.$message({
+              showClose: true,
+              message: '添加成功',
+              type: 'success'
+            });
             this.open = false;
             this.getList();
+            this.$refs.leftTree.setCheckedKeys([]);
+            this.$refs.rightTree.setCheckedKeys([]);
           });
           // }
         // }

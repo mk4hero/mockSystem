@@ -23,15 +23,12 @@ public class EBK74215rocessImpl implements IProcessService {
         switch (MsgType.getKey(msgType)){
             case XML:
                 msgMockServiceImpl.serialNetDoXml(inMsg, busiCode);
-//                msgMockServiceImpl.mapping(inMsg, msgType, busiCode);
                 break;
             case JSON:
                 msgMockServiceImpl.serialNetDoJson(inMsg, busiCode);
-//                msgMockServiceImpl.mapping(inMsg, msgType, busiCode);
                 break;
             case FLSTR:
                 msgMockServiceImpl.serialNetDoFlStr(inMsg, busiCode);
-//                msgMockServiceImpl.mapping(inMsg, msgType, busiCode);
                 break;
             default :
                 logger.error("报文类型判断错误，请检查！");
