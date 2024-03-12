@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysTemplateNodeInfoDAO">
+  <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="busi_code" jdbcType="VARCHAR" property="busiCode" />
+    <result column="channel" jdbcType="VARCHAR" property="channel" />
+    <result column="msg_type" jdbcType="VARCHAR" property="msgType" />
+    <result column="field_Name" jdbcType="VARCHAR" property="fieldName" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="sign" jdbcType="VARCHAR" property="sign" />
+    <result column="location" jdbcType="INTEGER" property="location" />
+    <result column="length" jdbcType="INTEGER" property="length" />
+    <result column="loop_count" jdbcType="INTEGER" property="loopCount" />
+    <result column="loop_length" jdbcType="INTEGER" property="loopLength" />
+    <result column="parent_Id" jdbcType="INTEGER" property="parentId" />
+    <result column="is_Son_Node" jdbcType="BIT" property="isSonNode" />
+    <result column="number" jdbcType="VARCHAR" property="number" />
+    <result column="remark1" jdbcType="VARCHAR" property="remark1" />
+    <result column="remark2" jdbcType="VARCHAR" property="remark2" />
+    <result column="remark3" jdbcType="VARCHAR" property="remark3" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, busi_code, channel, msg_type, field_Name, `path`, sign, `location`, `length`, 
+    loop_count, loop_length, parent_Id, is_Son_Node, `number`, remark1, remark2, remark3
+  </sql>
+  <select id="selectByExample" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfoExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from mocksys_template_node_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from mocksys_template_node_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mocksys_template_node_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfoExample">
+    delete from mocksys_template_node_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo" useGeneratedKeys="true">
+    insert into mocksys_template_node_info (busi_code, channel, msg_type, 
+      field_Name, `path`, sign, 
+      `location`, `length`, loop_count, 
+      loop_length, parent_Id, is_Son_Node, 
+      `number`, remark1, remark2, 
+      remark3)
+    values (#{busiCode,jdbcType=VARCHAR}, #{channel,jdbcType=VARCHAR}, #{msgType,jdbcType=VARCHAR}, 
+      #{fieldName,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR}, #{sign,jdbcType=VARCHAR}, 
+      #{location,jdbcType=INTEGER}, #{length,jdbcType=INTEGER}, #{loopCount,jdbcType=INTEGER}, 
+      #{loopLength,jdbcType=INTEGER}, #{parentId,jdbcType=INTEGER}, #{isSonNode,jdbcType=BIT}, 
+      #{number,jdbcType=VARCHAR}, #{remark1,jdbcType=VARCHAR}, #{remark2,jdbcType=VARCHAR}, 
+      #{remark3,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo" useGeneratedKeys="true">
+    insert into mocksys_template_node_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="busiCode != null">
+        busi_code,
+      </if>
+      <if test="channel != null">
+        channel,
+      </if>
+      <if test="msgType != null">
+        msg_type,
+      </if>
+      <if test="fieldName != null">
+        field_Name,
+      </if>
+      <if test="path != null">
+        `path`,
+      </if>
+      <if test="sign != null">
+        sign,
+      </if>
+      <if test="location != null">
+        `location`,
+      </if>
+      <if test="length != null">
+        `length`,
+      </if>
+      <if test="loopCount != null">
+        loop_count,
+      </if>
+      <if test="loopLength != null">
+        loop_length,
+      </if>
+      <if test="parentId != null">
+        parent_Id,
+      </if>
+      <if test="isSonNode != null">
+        is_Son_Node,
+      </if>
+      <if test="number != null">
+        `number`,
+      </if>
+      <if test="remark1 != null">
+        remark1,
+      </if>
+      <if test="remark2 != null">
+        remark2,
+      </if>
+      <if test="remark3 != null">
+        remark3,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="busiCode != null">
+        #{busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldName != null">
+        #{fieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="sign != null">
+        #{sign,jdbcType=VARCHAR},
+      </if>
+      <if test="location != null">
+        #{location,jdbcType=INTEGER},
+      </if>
+      <if test="length != null">
+        #{length,jdbcType=INTEGER},
+      </if>
+      <if test="loopCount != null">
+        #{loopCount,jdbcType=INTEGER},
+      </if>
+      <if test="loopLength != null">
+        #{loopLength,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null">
+        #{parentId,jdbcType=INTEGER},
+      </if>
+      <if test="isSonNode != null">
+        #{isSonNode,jdbcType=BIT},
+      </if>
+      <if test="number != null">
+        #{number,jdbcType=VARCHAR},
+      </if>
+      <if test="remark1 != null">
+        #{remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="remark2 != null">
+        #{remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="remark3 != null">
+        #{remark3,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfoExample" resultType="java.lang.Long">
+    select count(*) from mocksys_template_node_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update mocksys_template_node_info
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.busiCode != null">
+        busi_code = #{record.busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.channel != null">
+        channel = #{record.channel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.msgType != null">
+        msg_type = #{record.msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.fieldName != null">
+        field_Name = #{record.fieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.path != null">
+        `path` = #{record.path,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sign != null">
+        sign = #{record.sign,jdbcType=VARCHAR},
+      </if>
+      <if test="record.location != null">
+        `location` = #{record.location,jdbcType=INTEGER},
+      </if>
+      <if test="record.length != null">
+        `length` = #{record.length,jdbcType=INTEGER},
+      </if>
+      <if test="record.loopCount != null">
+        loop_count = #{record.loopCount,jdbcType=INTEGER},
+      </if>
+      <if test="record.loopLength != null">
+        loop_length = #{record.loopLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.parentId != null">
+        parent_Id = #{record.parentId,jdbcType=INTEGER},
+      </if>
+      <if test="record.isSonNode != null">
+        is_Son_Node = #{record.isSonNode,jdbcType=BIT},
+      </if>
+      <if test="record.number != null">
+        `number` = #{record.number,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark1 != null">
+        remark1 = #{record.remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark2 != null">
+        remark2 = #{record.remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark3 != null">
+        remark3 = #{record.remark3,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update mocksys_template_node_info
+    set id = #{record.id,jdbcType=INTEGER},
+      busi_code = #{record.busiCode,jdbcType=VARCHAR},
+      channel = #{record.channel,jdbcType=VARCHAR},
+      msg_type = #{record.msgType,jdbcType=VARCHAR},
+      field_Name = #{record.fieldName,jdbcType=VARCHAR},
+      `path` = #{record.path,jdbcType=VARCHAR},
+      sign = #{record.sign,jdbcType=VARCHAR},
+      `location` = #{record.location,jdbcType=INTEGER},
+      `length` = #{record.length,jdbcType=INTEGER},
+      loop_count = #{record.loopCount,jdbcType=INTEGER},
+      loop_length = #{record.loopLength,jdbcType=INTEGER},
+      parent_Id = #{record.parentId,jdbcType=INTEGER},
+      is_Son_Node = #{record.isSonNode,jdbcType=BIT},
+      `number` = #{record.number,jdbcType=VARCHAR},
+      remark1 = #{record.remark1,jdbcType=VARCHAR},
+      remark2 = #{record.remark2,jdbcType=VARCHAR},
+      remark3 = #{record.remark3,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo">
+    update mocksys_template_node_info
+    <set>
+      <if test="busiCode != null">
+        busi_code = #{busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        channel = #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        msg_type = #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="fieldName != null">
+        field_Name = #{fieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        `path` = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="sign != null">
+        sign = #{sign,jdbcType=VARCHAR},
+      </if>
+      <if test="location != null">
+        `location` = #{location,jdbcType=INTEGER},
+      </if>
+      <if test="length != null">
+        `length` = #{length,jdbcType=INTEGER},
+      </if>
+      <if test="loopCount != null">
+        loop_count = #{loopCount,jdbcType=INTEGER},
+      </if>
+      <if test="loopLength != null">
+        loop_length = #{loopLength,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null">
+        parent_Id = #{parentId,jdbcType=INTEGER},
+      </if>
+      <if test="isSonNode != null">
+        is_Son_Node = #{isSonNode,jdbcType=BIT},
+      </if>
+      <if test="number != null">
+        `number` = #{number,jdbcType=VARCHAR},
+      </if>
+      <if test="remark1 != null">
+        remark1 = #{remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="remark2 != null">
+        remark2 = #{remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="remark3 != null">
+        remark3 = #{remark3,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo">
+    update mocksys_template_node_info
+    set busi_code = #{busiCode,jdbcType=VARCHAR},
+      channel = #{channel,jdbcType=VARCHAR},
+      msg_type = #{msgType,jdbcType=VARCHAR},
+      field_Name = #{fieldName,jdbcType=VARCHAR},
+      `path` = #{path,jdbcType=VARCHAR},
+      sign = #{sign,jdbcType=VARCHAR},
+      `location` = #{location,jdbcType=INTEGER},
+      `length` = #{length,jdbcType=INTEGER},
+      loop_count = #{loopCount,jdbcType=INTEGER},
+      loop_length = #{loopLength,jdbcType=INTEGER},
+      parent_Id = #{parentId,jdbcType=INTEGER},
+      is_Son_Node = #{isSonNode,jdbcType=BIT},
+      `number` = #{number,jdbcType=VARCHAR},
+      remark1 = #{remark1,jdbcType=VARCHAR},
+      remark2 = #{remark2,jdbcType=VARCHAR},
+      remark3 = #{remark3,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

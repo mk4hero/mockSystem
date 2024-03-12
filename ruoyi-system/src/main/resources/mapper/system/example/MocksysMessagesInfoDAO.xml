@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysMessagesInfoDAO">
+  <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.mock.MocksysMessagesInfo">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="busi_code" jdbcType="VARCHAR" property="busiCode" />
+    <result column="msg_type" jdbcType="VARCHAR" property="msgType" />
+    <result column="channel" jdbcType="VARCHAR" property="channel" />
+    <result column="req_Date_Time" jdbcType="TIMESTAMP" property="reqDateTime" />
+    <result column="resp_Date_Time" jdbcType="TIMESTAMP" property="respDateTime" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ruoyi.system.domain.mock.MocksysMessagesInfoWithBLOBs">
+    <result column="req_Msg" jdbcType="LONGVARCHAR" property="reqMsg" />
+    <result column="resp_Msg" jdbcType="LONGVARCHAR" property="respMsg" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, busi_code, msg_type, channel, req_Date_Time, resp_Date_Time
+  </sql>
+  <sql id="Blob_Column_List">
+    req_Msg, resp_Msg
+  </sql>
+  <select id="selectByExampleWithBLOBs" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoExample" resultMap="ResultMapWithBLOBs">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from mocksys_messages_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from mocksys_messages_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from mocksys_messages_info
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from mocksys_messages_info
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoExample">
+    delete from mocksys_messages_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoWithBLOBs" useGeneratedKeys="true">
+    insert into mocksys_messages_info (busi_code, msg_type, channel, 
+      req_Date_Time, resp_Date_Time, req_Msg, 
+      resp_Msg)
+    values (#{busiCode,jdbcType=VARCHAR}, #{msgType,jdbcType=VARCHAR}, #{channel,jdbcType=VARCHAR}, 
+      #{reqDateTime,jdbcType=TIMESTAMP}, #{respDateTime,jdbcType=TIMESTAMP}, #{reqMsg,jdbcType=LONGVARCHAR}, 
+      #{respMsg,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoWithBLOBs" useGeneratedKeys="true">
+    insert into mocksys_messages_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="busiCode != null">
+        busi_code,
+      </if>
+      <if test="msgType != null">
+        msg_type,
+      </if>
+      <if test="channel != null">
+        channel,
+      </if>
+      <if test="reqDateTime != null">
+        req_Date_Time,
+      </if>
+      <if test="respDateTime != null">
+        resp_Date_Time,
+      </if>
+      <if test="reqMsg != null">
+        req_Msg,
+      </if>
+      <if test="respMsg != null">
+        resp_Msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="busiCode != null">
+        #{busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="reqDateTime != null">
+        #{reqDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="respDateTime != null">
+        #{respDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="reqMsg != null">
+        #{reqMsg,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="respMsg != null">
+        #{respMsg,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoExample" resultType="java.lang.Long">
+    select count(*) from mocksys_messages_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update mocksys_messages_info
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.busiCode != null">
+        busi_code = #{record.busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.msgType != null">
+        msg_type = #{record.msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.channel != null">
+        channel = #{record.channel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.reqDateTime != null">
+        req_Date_Time = #{record.reqDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.respDateTime != null">
+        resp_Date_Time = #{record.respDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.reqMsg != null">
+        req_Msg = #{record.reqMsg,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="record.respMsg != null">
+        resp_Msg = #{record.respMsg,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExampleWithBLOBs" parameterType="map">
+    update mocksys_messages_info
+    set id = #{record.id,jdbcType=VARCHAR},
+      busi_code = #{record.busiCode,jdbcType=VARCHAR},
+      msg_type = #{record.msgType,jdbcType=VARCHAR},
+      channel = #{record.channel,jdbcType=VARCHAR},
+      req_Date_Time = #{record.reqDateTime,jdbcType=TIMESTAMP},
+      resp_Date_Time = #{record.respDateTime,jdbcType=TIMESTAMP},
+      req_Msg = #{record.reqMsg,jdbcType=LONGVARCHAR},
+      resp_Msg = #{record.respMsg,jdbcType=LONGVARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update mocksys_messages_info
+    set id = #{record.id,jdbcType=VARCHAR},
+      busi_code = #{record.busiCode,jdbcType=VARCHAR},
+      msg_type = #{record.msgType,jdbcType=VARCHAR},
+      channel = #{record.channel,jdbcType=VARCHAR},
+      req_Date_Time = #{record.reqDateTime,jdbcType=TIMESTAMP},
+      resp_Date_Time = #{record.respDateTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoWithBLOBs">
+    update mocksys_messages_info
+    <set>
+      <if test="busiCode != null">
+        busi_code = #{busiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        msg_type = #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        channel = #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="reqDateTime != null">
+        req_Date_Time = #{reqDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="respDateTime != null">
+        resp_Date_Time = #{respDateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="reqMsg != null">
+        req_Msg = #{reqMsg,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="respMsg != null">
+        resp_Msg = #{respMsg,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfoWithBLOBs">
+    update mocksys_messages_info
+    set busi_code = #{busiCode,jdbcType=VARCHAR},
+      msg_type = #{msgType,jdbcType=VARCHAR},
+      channel = #{channel,jdbcType=VARCHAR},
+      req_Date_Time = #{reqDateTime,jdbcType=TIMESTAMP},
+      resp_Date_Time = #{respDateTime,jdbcType=TIMESTAMP},
+      req_Msg = #{reqMsg,jdbcType=LONGVARCHAR},
+      resp_Msg = #{respMsg,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ruoyi.system.domain.mock.MocksysMessagesInfo">
+    update mocksys_messages_info
+    set busi_code = #{busiCode,jdbcType=VARCHAR},
+      msg_type = #{msgType,jdbcType=VARCHAR},
+      channel = #{channel,jdbcType=VARCHAR},
+      req_Date_Time = #{reqDateTime,jdbcType=TIMESTAMP},
+      resp_Date_Time = #{respDateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysMappingInfoMapper">
+    
+    <resultMap type="MocksysMappingInfo" id="MocksysMappingInfoResult">
+        <result property="id"    column="id"    />
+        <result property="sourceBusiCode"    column="source_busi_code"    />
+        <result property="sourceMsgType"    column="source_msg_type"    />
+        <result property="sourceFieldName"    column="source_field_Name"    />
+        <result property="sourceNumber"    column="source_number"    />
+        <result property="sourcePath"    column="source_path"    />
+        <result property="sourceSign"    column="source_sign"    />
+        <result property="sourceLocation"    column="source_location"    />
+        <result property="sourceLength"    column="source_length"    />
+        <result property="sourceLoopCount"    column="source_loop_count"    />
+        <result property="sourceLoopLength"    column="source_loop_length"    />
+        <result property="targetBusiCode"    column="target_busi_code"    />
+        <result property="targetMsgType"    column="target_msg_type"    />
+        <result property="targetFieldName"    column="target_field_Name"    />
+        <result property="targetNumber"    column="target_number"    />
+        <result property="targetPath"    column="target_path"    />
+        <result property="targetSign"    column="target_sign"    />
+        <result property="targetLocation"    column="target_location"    />
+        <result property="targetLength"    column="target_length"    />
+        <result property="targetLoopCount"    column="target_loop_count"    />
+        <result property="targetLoopLength"    column="target_loop_length"    />
+        <result property="action"    column="action"    />
+        <result property="operate"    column="operate"    />
+        <result property="parameter"    column="parameter"    />
+        <result property="channel"    column="channel"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+        <result property="remark3"    column="remark3"    />
+    </resultMap>
+
+    <sql id="selectMocksysMappingInfoVo">
+        select id, source_busi_code, source_msg_type, source_field_Name, source_number, source_path, source_sign, source_location, source_length, source_loop_count, source_loop_length, target_busi_code, target_msg_type, target_field_Name, target_number, target_path, target_sign, target_location, target_length, target_loop_count, target_loop_length, action, operate, parameter, channel, remark1, remark2, remark3 from mocksys_mapping_info
+    </sql>
+
+    <select id="selectMocksysMappingInfoList" parameterType="MocksysMappingInfo" resultMap="MocksysMappingInfoResult">
+        <include refid="selectMocksysMappingInfoVo"/>
+        <where>  
+            <if test="sourceBusiCode != null  and sourceBusiCode != ''"> and source_busi_code = #{sourceBusiCode}</if>
+            <if test="sourceMsgType != null  and sourceMsgType != ''"> and source_msg_type = #{sourceMsgType}</if>
+            <if test="sourceFieldName != null  and sourceFieldName != ''"> and source_field_Name like concat('%', #{sourceFieldName}, '%')</if>
+            <if test="sourceNumber != null "> and source_number = #{sourceNumber}</if>
+            <if test="sourcePath != null  and sourcePath != ''"> and source_path = #{sourcePath}</if>
+            <if test="sourceSign != null  and sourceSign != ''"> and source_sign = #{sourceSign}</if>
+            <if test="sourceLocation != null "> and source_location = #{sourceLocation}</if>
+            <if test="sourceLength != null "> and source_length = #{sourceLength}</if>
+            <if test="sourceLoopCount != null "> and source_loop_count = #{sourceLoopCount}</if>
+            <if test="sourceLoopLength != null "> and source_loop_length = #{sourceLoopLength}</if>
+            <if test="targetBusiCode != null  and targetBusiCode != ''"> and target_busi_code = #{targetBusiCode}</if>
+            <if test="targetMsgType != null  and targetMsgType != ''"> and target_msg_type = #{targetMsgType}</if>
+            <if test="targetFieldName != null  and targetFieldName != ''"> and target_field_Name like concat('%', #{targetFieldName}, '%')</if>
+            <if test="targetNumber != null "> and target_number = #{targetNumber}</if>
+            <if test="targetPath != null  and targetPath != ''"> and target_path = #{targetPath}</if>
+            <if test="targetSign != null  and targetSign != ''"> and target_sign = #{targetSign}</if>
+            <if test="targetLocation != null "> and target_location = #{targetLocation}</if>
+            <if test="targetLength != null "> and target_length = #{targetLength}</if>
+            <if test="targetLoopCount != null "> and target_loop_count = #{targetLoopCount}</if>
+            <if test="targetLoopLength != null "> and target_loop_length = #{targetLoopLength}</if>
+            <if test="action != null  and action != ''"> and action = #{action}</if>
+            <if test="operate != null  and operate != ''"> and operate = #{operate}</if>
+            <if test="parameter != null  and parameter != ''"> and parameter = #{parameter}</if>
+            <if test="channel != null  and channel != ''"> and channel = #{channel}</if>
+            <if test="remark1 != null  and remark1 != ''"> and remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and remark2 = #{remark2}</if>
+            <if test="remark3 != null  and remark3 != ''"> and remark3 = #{remark3}</if>
+        </where>
+    </select>
+    
+    <select id="selectMocksysMappingInfoById" parameterType="Integer" resultMap="MocksysMappingInfoResult">
+        <include refid="selectMocksysMappingInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertMocksysMappingInfo" parameterType="MocksysMappingInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into mocksys_mapping_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="sourceBusiCode != null">source_busi_code,</if>
+            <if test="sourceMsgType != null">source_msg_type,</if>
+            <if test="sourceFieldName != null">source_field_Name,</if>
+            <if test="sourceNumber != null">source_number,</if>
+            <if test="sourcePath != null">source_path,</if>
+            <if test="sourceSign != null">source_sign,</if>
+            <if test="sourceLocation != null">source_location,</if>
+            <if test="sourceLength != null">source_length,</if>
+            <if test="sourceLoopCount != null">source_loop_count,</if>
+            <if test="sourceLoopLength != null">source_loop_length,</if>
+            <if test="targetBusiCode != null">target_busi_code,</if>
+            <if test="targetMsgType != null">target_msg_type,</if>
+            <if test="targetFieldName != null">target_field_Name,</if>
+            <if test="targetNumber != null">target_number,</if>
+            <if test="targetPath != null">target_path,</if>
+            <if test="targetSign != null">target_sign,</if>
+            <if test="targetLocation != null">target_location,</if>
+            <if test="targetLength != null">target_length,</if>
+            <if test="targetLoopCount != null">target_loop_count,</if>
+            <if test="targetLoopLength != null">target_loop_length,</if>
+            <if test="action != null">action,</if>
+            <if test="operate != null">operate,</if>
+            <if test="parameter != null">parameter,</if>
+            <if test="channel != null">channel,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+            <if test="remark3 != null">remark3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="sourceBusiCode != null">#{sourceBusiCode},</if>
+            <if test="sourceMsgType != null">#{sourceMsgType},</if>
+            <if test="sourceFieldName != null">#{sourceFieldName},</if>
+            <if test="sourceNumber != null">#{sourceNumber},</if>
+            <if test="sourcePath != null">#{sourcePath},</if>
+            <if test="sourceSign != null">#{sourceSign},</if>
+            <if test="sourceLocation != null">#{sourceLocation},</if>
+            <if test="sourceLength != null">#{sourceLength},</if>
+            <if test="sourceLoopCount != null">#{sourceLoopCount},</if>
+            <if test="sourceLoopLength != null">#{sourceLoopLength},</if>
+            <if test="targetBusiCode != null">#{targetBusiCode},</if>
+            <if test="targetMsgType != null">#{targetMsgType},</if>
+            <if test="targetFieldName != null">#{targetFieldName},</if>
+            <if test="targetNumber != null">#{targetNumber},</if>
+            <if test="targetPath != null">#{targetPath},</if>
+            <if test="targetSign != null">#{targetSign},</if>
+            <if test="targetLocation != null">#{targetLocation},</if>
+            <if test="targetLength != null">#{targetLength},</if>
+            <if test="targetLoopCount != null">#{targetLoopCount},</if>
+            <if test="targetLoopLength != null">#{targetLoopLength},</if>
+            <if test="action != null">#{action},</if>
+            <if test="operate != null">#{operate},</if>
+            <if test="parameter != null">#{parameter},</if>
+            <if test="channel != null">#{channel},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+            <if test="remark3 != null">#{remark3},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMocksysMappingInfo" parameterType="MocksysMappingInfo">
+        update mocksys_mapping_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="sourceBusiCode != null">source_busi_code = #{sourceBusiCode},</if>
+            <if test="sourceMsgType != null">source_msg_type = #{sourceMsgType},</if>
+            <if test="sourceFieldName != null">source_field_Name = #{sourceFieldName},</if>
+            <if test="sourceNumber != null">source_number = #{sourceNumber},</if>
+            <if test="sourcePath != null">source_path = #{sourcePath},</if>
+            <if test="sourceSign != null">source_sign = #{sourceSign},</if>
+            <if test="sourceLocation != null">source_location = #{sourceLocation},</if>
+            <if test="sourceLength != null">source_length = #{sourceLength},</if>
+            <if test="sourceLoopCount != null">source_loop_count = #{sourceLoopCount},</if>
+            <if test="sourceLoopLength != null">source_loop_length = #{sourceLoopLength},</if>
+            <if test="targetBusiCode != null">target_busi_code = #{targetBusiCode},</if>
+            <if test="targetMsgType != null">target_msg_type = #{targetMsgType},</if>
+            <if test="targetFieldName != null">target_field_Name = #{targetFieldName},</if>
+            <if test="targetNumber != null">target_number = #{targetNumber},</if>
+            <if test="targetPath != null">target_path = #{targetPath},</if>
+            <if test="targetSign != null">target_sign = #{targetSign},</if>
+            <if test="targetLocation != null">target_location = #{targetLocation},</if>
+            <if test="targetLength != null">target_length = #{targetLength},</if>
+            <if test="targetLoopCount != null">target_loop_count = #{targetLoopCount},</if>
+            <if test="targetLoopLength != null">target_loop_length = #{targetLoopLength},</if>
+            <if test="action != null">action = #{action},</if>
+            <if test="operate != null">operate = #{operate},</if>
+            <if test="parameter != null">parameter = #{parameter},</if>
+            <if test="channel != null">channel = #{channel},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+            <if test="remark3 != null">remark3 = #{remark3},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMocksysMappingInfoById" parameterType="Integer">
+        delete from mocksys_mapping_info where id = #{id}
+    </delete>
+
+    <delete id="deleteMocksysMappingInfoByIds" parameterType="String">
+        delete from mocksys_mapping_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

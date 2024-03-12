@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysMappingInfoDAO">
+  <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.mock.MocksysMappingInfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="source_busi_code" jdbcType="VARCHAR" property="sourceBusiCode" />
+    <result column="source_msg_type" jdbcType="VARCHAR" property="sourceMsgType" />
+    <result column="source_field_Name" jdbcType="VARCHAR" property="sourceFieldName" />
+    <result column="source_number" jdbcType="INTEGER" property="sourceNumber" />
+    <result column="source_path" jdbcType="VARCHAR" property="sourcePath" />
+    <result column="source_sign" jdbcType="VARCHAR" property="sourceSign" />
+    <result column="source_location" jdbcType="INTEGER" property="sourceLocation" />
+    <result column="source_length" jdbcType="INTEGER" property="sourceLength" />
+    <result column="source_loop_count" jdbcType="INTEGER" property="sourceLoopCount" />
+    <result column="source_loop_length" jdbcType="INTEGER" property="sourceLoopLength" />
+    <result column="target_busi_code" jdbcType="VARCHAR" property="targetBusiCode" />
+    <result column="target_msg_type" jdbcType="VARCHAR" property="targetMsgType" />
+    <result column="target_field_Name" jdbcType="VARCHAR" property="targetFieldName" />
+    <result column="target_number" jdbcType="INTEGER" property="targetNumber" />
+    <result column="target_path" jdbcType="VARCHAR" property="targetPath" />
+    <result column="target_sign" jdbcType="VARCHAR" property="targetSign" />
+    <result column="target_location" jdbcType="INTEGER" property="targetLocation" />
+    <result column="target_length" jdbcType="INTEGER" property="targetLength" />
+    <result column="target_loop_count" jdbcType="INTEGER" property="targetLoopCount" />
+    <result column="target_loop_length" jdbcType="INTEGER" property="targetLoopLength" />
+    <result column="action" jdbcType="VARCHAR" property="action" />
+    <result column="operate" jdbcType="VARCHAR" property="operate" />
+    <result column="parameter" jdbcType="VARCHAR" property="parameter" />
+    <result column="channel" jdbcType="VARCHAR" property="channel" />
+    <result column="remark1" jdbcType="VARCHAR" property="remark1" />
+    <result column="remark2" jdbcType="VARCHAR" property="remark2" />
+    <result column="remark3" jdbcType="VARCHAR" property="remark3" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, source_busi_code, source_msg_type, source_field_Name, source_number, source_path, 
+    source_sign, source_location, source_length, source_loop_count, source_loop_length, 
+    target_busi_code, target_msg_type, target_field_Name, target_number, target_path, 
+    target_sign, target_location, target_length, target_loop_count, target_loop_length, 
+    `action`, operate, `parameter`, channel, remark1, remark2, remark3
+  </sql>
+  <select id="selectByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfoExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from mocksys_mapping_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from mocksys_mapping_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mocksys_mapping_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfoExample">
+    delete from mocksys_mapping_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfo" useGeneratedKeys="true">
+    insert into mocksys_mapping_info (source_busi_code, source_msg_type, source_field_Name, 
+      source_number, source_path, source_sign, 
+      source_location, source_length, source_loop_count, 
+      source_loop_length, target_busi_code, target_msg_type, 
+      target_field_Name, target_number, target_path, 
+      target_sign, target_location, target_length, 
+      target_loop_count, target_loop_length, `action`, 
+      operate, `parameter`, channel, 
+      remark1, remark2, remark3
+      )
+    values (#{sourceBusiCode,jdbcType=VARCHAR}, #{sourceMsgType,jdbcType=VARCHAR}, #{sourceFieldName,jdbcType=VARCHAR}, 
+      #{sourceNumber,jdbcType=INTEGER}, #{sourcePath,jdbcType=VARCHAR}, #{sourceSign,jdbcType=VARCHAR}, 
+      #{sourceLocation,jdbcType=INTEGER}, #{sourceLength,jdbcType=INTEGER}, #{sourceLoopCount,jdbcType=INTEGER}, 
+      #{sourceLoopLength,jdbcType=INTEGER}, #{targetBusiCode,jdbcType=VARCHAR}, #{targetMsgType,jdbcType=VARCHAR}, 
+      #{targetFieldName,jdbcType=VARCHAR}, #{targetNumber,jdbcType=INTEGER}, #{targetPath,jdbcType=VARCHAR}, 
+      #{targetSign,jdbcType=VARCHAR}, #{targetLocation,jdbcType=INTEGER}, #{targetLength,jdbcType=INTEGER}, 
+      #{targetLoopCount,jdbcType=INTEGER}, #{targetLoopLength,jdbcType=INTEGER}, #{action,jdbcType=VARCHAR}, 
+      #{operate,jdbcType=VARCHAR}, #{parameter,jdbcType=VARCHAR}, #{channel,jdbcType=VARCHAR}, 
+      #{remark1,jdbcType=VARCHAR}, #{remark2,jdbcType=VARCHAR}, #{remark3,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfo" useGeneratedKeys="true">
+    insert into mocksys_mapping_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="sourceBusiCode != null">
+        source_busi_code,
+      </if>
+      <if test="sourceMsgType != null">
+        source_msg_type,
+      </if>
+      <if test="sourceFieldName != null">
+        source_field_Name,
+      </if>
+      <if test="sourceNumber != null">
+        source_number,
+      </if>
+      <if test="sourcePath != null">
+        source_path,
+      </if>
+      <if test="sourceSign != null">
+        source_sign,
+      </if>
+      <if test="sourceLocation != null">
+        source_location,
+      </if>
+      <if test="sourceLength != null">
+        source_length,
+      </if>
+      <if test="sourceLoopCount != null">
+        source_loop_count,
+      </if>
+      <if test="sourceLoopLength != null">
+        source_loop_length,
+      </if>
+      <if test="targetBusiCode != null">
+        target_busi_code,
+      </if>
+      <if test="targetMsgType != null">
+        target_msg_type,
+      </if>
+      <if test="targetFieldName != null">
+        target_field_Name,
+      </if>
+      <if test="targetNumber != null">
+        target_number,
+      </if>
+      <if test="targetPath != null">
+        target_path,
+      </if>
+      <if test="targetSign != null">
+        target_sign,
+      </if>
+      <if test="targetLocation != null">
+        target_location,
+      </if>
+      <if test="targetLength != null">
+        target_length,
+      </if>
+      <if test="targetLoopCount != null">
+        target_loop_count,
+      </if>
+      <if test="targetLoopLength != null">
+        target_loop_length,
+      </if>
+      <if test="action != null">
+        `action`,
+      </if>
+      <if test="operate != null">
+        operate,
+      </if>
+      <if test="parameter != null">
+        `parameter`,
+      </if>
+      <if test="channel != null">
+        channel,
+      </if>
+      <if test="remark1 != null">
+        remark1,
+      </if>
+      <if test="remark2 != null">
+        remark2,
+      </if>
+      <if test="remark3 != null">
+        remark3,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="sourceBusiCode != null">
+        #{sourceBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceMsgType != null">
+        #{sourceMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceFieldName != null">
+        #{sourceFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceNumber != null">
+        #{sourceNumber,jdbcType=INTEGER},
+      </if>
+      <if test="sourcePath != null">
+        #{sourcePath,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceSign != null">
+        #{sourceSign,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceLocation != null">
+        #{sourceLocation,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLength != null">
+        #{sourceLength,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLoopCount != null">
+        #{sourceLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLoopLength != null">
+        #{sourceLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="targetBusiCode != null">
+        #{targetBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="targetMsgType != null">
+        #{targetMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="targetFieldName != null">
+        #{targetFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="targetNumber != null">
+        #{targetNumber,jdbcType=INTEGER},
+      </if>
+      <if test="targetPath != null">
+        #{targetPath,jdbcType=VARCHAR},
+      </if>
+      <if test="targetSign != null">
+        #{targetSign,jdbcType=VARCHAR},
+      </if>
+      <if test="targetLocation != null">
+        #{targetLocation,jdbcType=INTEGER},
+      </if>
+      <if test="targetLength != null">
+        #{targetLength,jdbcType=INTEGER},
+      </if>
+      <if test="targetLoopCount != null">
+        #{targetLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="targetLoopLength != null">
+        #{targetLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="action != null">
+        #{action,jdbcType=VARCHAR},
+      </if>
+      <if test="operate != null">
+        #{operate,jdbcType=VARCHAR},
+      </if>
+      <if test="parameter != null">
+        #{parameter,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="remark1 != null">
+        #{remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="remark2 != null">
+        #{remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="remark3 != null">
+        #{remark3,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfoExample" resultType="java.lang.Long">
+    select count(*) from mocksys_mapping_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update mocksys_mapping_info
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourceBusiCode != null">
+        source_busi_code = #{record.sourceBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceMsgType != null">
+        source_msg_type = #{record.sourceMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceFieldName != null">
+        source_field_Name = #{record.sourceFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceNumber != null">
+        source_number = #{record.sourceNumber,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourcePath != null">
+        source_path = #{record.sourcePath,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceSign != null">
+        source_sign = #{record.sourceSign,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceLocation != null">
+        source_location = #{record.sourceLocation,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourceLength != null">
+        source_length = #{record.sourceLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourceLoopCount != null">
+        source_loop_count = #{record.sourceLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="record.sourceLoopLength != null">
+        source_loop_length = #{record.sourceLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.targetBusiCode != null">
+        target_busi_code = #{record.targetBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.targetMsgType != null">
+        target_msg_type = #{record.targetMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.targetFieldName != null">
+        target_field_Name = #{record.targetFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.targetNumber != null">
+        target_number = #{record.targetNumber,jdbcType=INTEGER},
+      </if>
+      <if test="record.targetPath != null">
+        target_path = #{record.targetPath,jdbcType=VARCHAR},
+      </if>
+      <if test="record.targetSign != null">
+        target_sign = #{record.targetSign,jdbcType=VARCHAR},
+      </if>
+      <if test="record.targetLocation != null">
+        target_location = #{record.targetLocation,jdbcType=INTEGER},
+      </if>
+      <if test="record.targetLength != null">
+        target_length = #{record.targetLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.targetLoopCount != null">
+        target_loop_count = #{record.targetLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="record.targetLoopLength != null">
+        target_loop_length = #{record.targetLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.action != null">
+        `action` = #{record.action,jdbcType=VARCHAR},
+      </if>
+      <if test="record.operate != null">
+        operate = #{record.operate,jdbcType=VARCHAR},
+      </if>
+      <if test="record.parameter != null">
+        `parameter` = #{record.parameter,jdbcType=VARCHAR},
+      </if>
+      <if test="record.channel != null">
+        channel = #{record.channel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark1 != null">
+        remark1 = #{record.remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark2 != null">
+        remark2 = #{record.remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark3 != null">
+        remark3 = #{record.remark3,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update mocksys_mapping_info
+    set id = #{record.id,jdbcType=INTEGER},
+      source_busi_code = #{record.sourceBusiCode,jdbcType=VARCHAR},
+      source_msg_type = #{record.sourceMsgType,jdbcType=VARCHAR},
+      source_field_Name = #{record.sourceFieldName,jdbcType=VARCHAR},
+      source_number = #{record.sourceNumber,jdbcType=INTEGER},
+      source_path = #{record.sourcePath,jdbcType=VARCHAR},
+      source_sign = #{record.sourceSign,jdbcType=VARCHAR},
+      source_location = #{record.sourceLocation,jdbcType=INTEGER},
+      source_length = #{record.sourceLength,jdbcType=INTEGER},
+      source_loop_count = #{record.sourceLoopCount,jdbcType=INTEGER},
+      source_loop_length = #{record.sourceLoopLength,jdbcType=INTEGER},
+      target_busi_code = #{record.targetBusiCode,jdbcType=VARCHAR},
+      target_msg_type = #{record.targetMsgType,jdbcType=VARCHAR},
+      target_field_Name = #{record.targetFieldName,jdbcType=VARCHAR},
+      target_number = #{record.targetNumber,jdbcType=INTEGER},
+      target_path = #{record.targetPath,jdbcType=VARCHAR},
+      target_sign = #{record.targetSign,jdbcType=VARCHAR},
+      target_location = #{record.targetLocation,jdbcType=INTEGER},
+      target_length = #{record.targetLength,jdbcType=INTEGER},
+      target_loop_count = #{record.targetLoopCount,jdbcType=INTEGER},
+      target_loop_length = #{record.targetLoopLength,jdbcType=INTEGER},
+      `action` = #{record.action,jdbcType=VARCHAR},
+      operate = #{record.operate,jdbcType=VARCHAR},
+      `parameter` = #{record.parameter,jdbcType=VARCHAR},
+      channel = #{record.channel,jdbcType=VARCHAR},
+      remark1 = #{record.remark1,jdbcType=VARCHAR},
+      remark2 = #{record.remark2,jdbcType=VARCHAR},
+      remark3 = #{record.remark3,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfo">
+    update mocksys_mapping_info
+    <set>
+      <if test="sourceBusiCode != null">
+        source_busi_code = #{sourceBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceMsgType != null">
+        source_msg_type = #{sourceMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceFieldName != null">
+        source_field_Name = #{sourceFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceNumber != null">
+        source_number = #{sourceNumber,jdbcType=INTEGER},
+      </if>
+      <if test="sourcePath != null">
+        source_path = #{sourcePath,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceSign != null">
+        source_sign = #{sourceSign,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceLocation != null">
+        source_location = #{sourceLocation,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLength != null">
+        source_length = #{sourceLength,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLoopCount != null">
+        source_loop_count = #{sourceLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="sourceLoopLength != null">
+        source_loop_length = #{sourceLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="targetBusiCode != null">
+        target_busi_code = #{targetBusiCode,jdbcType=VARCHAR},
+      </if>
+      <if test="targetMsgType != null">
+        target_msg_type = #{targetMsgType,jdbcType=VARCHAR},
+      </if>
+      <if test="targetFieldName != null">
+        target_field_Name = #{targetFieldName,jdbcType=VARCHAR},
+      </if>
+      <if test="targetNumber != null">
+        target_number = #{targetNumber,jdbcType=INTEGER},
+      </if>
+      <if test="targetPath != null">
+        target_path = #{targetPath,jdbcType=VARCHAR},
+      </if>
+      <if test="targetSign != null">
+        target_sign = #{targetSign,jdbcType=VARCHAR},
+      </if>
+      <if test="targetLocation != null">
+        target_location = #{targetLocation,jdbcType=INTEGER},
+      </if>
+      <if test="targetLength != null">
+        target_length = #{targetLength,jdbcType=INTEGER},
+      </if>
+      <if test="targetLoopCount != null">
+        target_loop_count = #{targetLoopCount,jdbcType=INTEGER},
+      </if>
+      <if test="targetLoopLength != null">
+        target_loop_length = #{targetLoopLength,jdbcType=INTEGER},
+      </if>
+      <if test="action != null">
+        `action` = #{action,jdbcType=VARCHAR},
+      </if>
+      <if test="operate != null">
+        operate = #{operate,jdbcType=VARCHAR},
+      </if>
+      <if test="parameter != null">
+        `parameter` = #{parameter,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        channel = #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="remark1 != null">
+        remark1 = #{remark1,jdbcType=VARCHAR},
+      </if>
+      <if test="remark2 != null">
+        remark2 = #{remark2,jdbcType=VARCHAR},
+      </if>
+      <if test="remark3 != null">
+        remark3 = #{remark3,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ruoyi.system.domain.mock.MocksysMappingInfo">
+    update mocksys_mapping_info
+    set source_busi_code = #{sourceBusiCode,jdbcType=VARCHAR},
+      source_msg_type = #{sourceMsgType,jdbcType=VARCHAR},
+      source_field_Name = #{sourceFieldName,jdbcType=VARCHAR},
+      source_number = #{sourceNumber,jdbcType=INTEGER},
+      source_path = #{sourcePath,jdbcType=VARCHAR},
+      source_sign = #{sourceSign,jdbcType=VARCHAR},
+      source_location = #{sourceLocation,jdbcType=INTEGER},
+      source_length = #{sourceLength,jdbcType=INTEGER},
+      source_loop_count = #{sourceLoopCount,jdbcType=INTEGER},
+      source_loop_length = #{sourceLoopLength,jdbcType=INTEGER},
+      target_busi_code = #{targetBusiCode,jdbcType=VARCHAR},
+      target_msg_type = #{targetMsgType,jdbcType=VARCHAR},
+      target_field_Name = #{targetFieldName,jdbcType=VARCHAR},
+      target_number = #{targetNumber,jdbcType=INTEGER},
+      target_path = #{targetPath,jdbcType=VARCHAR},
+      target_sign = #{targetSign,jdbcType=VARCHAR},
+      target_location = #{targetLocation,jdbcType=INTEGER},
+      target_length = #{targetLength,jdbcType=INTEGER},
+      target_loop_count = #{targetLoopCount,jdbcType=INTEGER},
+      target_loop_length = #{targetLoopLength,jdbcType=INTEGER},
+      `action` = #{action,jdbcType=VARCHAR},
+      operate = #{operate,jdbcType=VARCHAR},
+      `parameter` = #{parameter,jdbcType=VARCHAR},
+      channel = #{channel,jdbcType=VARCHAR},
+      remark1 = #{remark1,jdbcType=VARCHAR},
+      remark2 = #{remark2,jdbcType=VARCHAR},
+      remark3 = #{remark3,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

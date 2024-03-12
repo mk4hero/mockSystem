@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysTemplateNodeInfoMapper">
+    
+    <resultMap type="MocksysTemplateNodeInfo" id="MocksysTemplateNodeInfoResult">
+        <result property="id"    column="id"    />
+        <result property="busiCode"    column="busi_code"    />
+        <result property="channel"    column="channel"    />
+        <result property="msgType"    column="msg_type"    />
+        <result property="fieldName"    column="field_Name"    />
+        <result property="path"    column="path"    />
+        <result property="sign"    column="sign"    />
+        <result property="location"    column="location"    />
+        <result property="length"    column="length"    />
+        <result property="loopCount"    column="loop_count"    />
+        <result property="loopLength"    column="loop_length"    />
+        <result property="parentId"    column="parent_Id"    />
+        <result property="isSonNode"    column="is_Son_Node"    />
+        <result property="number"    column="number"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+        <result property="remark3"    column="remark3"    />
+    </resultMap>
+
+    <sql id="selectMocksysTemplateNodeInfoVo">
+        select id, busi_code, channel, msg_type, field_Name, path, sign, location, length, loop_count, loop_length, parent_Id, is_Son_Node, number, remark1, remark2, remark3 from mocksys_template_node_info
+    </sql>
+
+    <select id="selectMocksysTemplateNodeInfoList" parameterType="MocksysTemplateNodeInfo" resultMap="MocksysTemplateNodeInfoResult">
+        <include refid="selectMocksysTemplateNodeInfoVo"/>
+        <where>  
+            <if test="busiCode != null  and busiCode != ''"> and busi_code = #{busiCode}</if>
+            <if test="channel != null  and channel != ''"> and channel = #{channel}</if>
+            <if test="msgType != null  and msgType != ''"> and msg_type = #{msgType}</if>
+            <if test="fieldName != null  and fieldName != ''"> and field_Name like concat('%', #{fieldName}, '%')</if>
+            <if test="path != null  and path != ''"> and path = #{path}</if>
+            <if test="sign != null  and sign != ''"> and sign = #{sign}</if>
+            <if test="location != null "> and location = #{location}</if>
+            <if test="length != null "> and length = #{length}</if>
+            <if test="loopCount != null "> and loop_count = #{loopCount}</if>
+            <if test="loopLength != null "> and loop_length = #{loopLength}</if>
+            <if test="parentId != null "> and parent_Id = #{parentId}</if>
+            <if test="isSonNode != null "> and is_Son_Node = #{isSonNode}</if>
+            <if test="number != null  and number != ''"> and number = #{number}</if>
+            <if test="remark1 != null  and remark1 != ''"> and remark1 = #{remark1}</if>
+            <if test="remark2 != null  and remark2 != ''"> and remark2 = #{remark2}</if>
+            <if test="remark3 != null  and remark3 != ''"> and remark3 = #{remark3}</if>
+        </where>
+    </select>
+    
+    <select id="selectMocksysTemplateNodeInfoById" parameterType="Integer" resultMap="MocksysTemplateNodeInfoResult">
+        <include refid="selectMocksysTemplateNodeInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertMocksysTemplateNodeInfo" parameterType="MocksysTemplateNodeInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into mocksys_template_node_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="busiCode != null">busi_code,</if>
+            <if test="channel != null">channel,</if>
+            <if test="msgType != null">msg_type,</if>
+            <if test="fieldName != null">field_Name,</if>
+            <if test="path != null">path,</if>
+            <if test="sign != null">sign,</if>
+            <if test="location != null">location,</if>
+            <if test="length != null">length,</if>
+            <if test="loopCount != null">loop_count,</if>
+            <if test="loopLength != null">loop_length,</if>
+            <if test="parentId != null">parent_Id,</if>
+            <if test="isSonNode != null">is_Son_Node,</if>
+            <if test="number != null">number,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+            <if test="remark3 != null">remark3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="busiCode != null">#{busiCode},</if>
+            <if test="channel != null">#{channel},</if>
+            <if test="msgType != null">#{msgType},</if>
+            <if test="fieldName != null">#{fieldName},</if>
+            <if test="path != null">#{path},</if>
+            <if test="sign != null">#{sign},</if>
+            <if test="location != null">#{location},</if>
+            <if test="length != null">#{length},</if>
+            <if test="loopCount != null">#{loopCount},</if>
+            <if test="loopLength != null">#{loopLength},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="isSonNode != null">#{isSonNode},</if>
+            <if test="number != null">#{number},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+            <if test="remark3 != null">#{remark3},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMocksysTemplateNodeInfo" parameterType="MocksysTemplateNodeInfo">
+        update mocksys_template_node_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="busiCode != null">busi_code = #{busiCode},</if>
+            <if test="channel != null">channel = #{channel},</if>
+            <if test="msgType != null">msg_type = #{msgType},</if>
+            <if test="fieldName != null">field_Name = #{fieldName},</if>
+            <if test="path != null">path = #{path},</if>
+            <if test="sign != null">sign = #{sign},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="length != null">length = #{length},</if>
+            <if test="loopCount != null">loop_count = #{loopCount},</if>
+            <if test="loopLength != null">loop_length = #{loopLength},</if>
+            <if test="parentId != null">parent_Id = #{parentId},</if>
+            <if test="isSonNode != null">is_Son_Node = #{isSonNode},</if>
+            <if test="number != null">number = #{number},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+            <if test="remark3 != null">remark3 = #{remark3},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMocksysTemplateNodeInfoById" parameterType="Integer">
+        delete from mocksys_template_node_info where id = #{id}
+    </delete>
+
+    <delete id="deleteMocksysTemplateNodeInfoByIds" parameterType="String">
+        delete from mocksys_template_node_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

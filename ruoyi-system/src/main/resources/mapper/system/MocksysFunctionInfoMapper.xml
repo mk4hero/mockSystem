@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.mock.MocksysFunctionInfoMapper">
+    
+    <resultMap type="MocksysFunctionInfo" id="MocksysFunctionInfoResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="cnName"    column="CN_name"    />
+        <result property="msgType"    column="msg_type"    />
+        <result property="action"    column="action"    />
+        <result property="parameterCount"    column="parameter_count"    />
+        <result property="parameterType"    column="parameter_type"    />
+        <result property="optionData"    column="option_data"    />
+    </resultMap>
+
+    <sql id="selectMocksysFunctionInfoVo">
+        select id, name, CN_name, msg_type, action, parameter_count, parameter_type, option_data from mocksys_function_info
+    </sql>
+
+    <select id="selectMocksysFunctionInfoList" parameterType="MocksysFunctionInfo" resultMap="MocksysFunctionInfoResult">
+        <include refid="selectMocksysFunctionInfoVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="cnName != null  and cnName != ''"> and CN_name like concat('%', #{cnName}, '%')</if>
+            <if test="msgType != null  and msgType != ''"> and msg_type = #{msgType}</if>
+            <if test="action != null  and action != ''"> and action = #{action}</if>
+            <if test="parameterCount != null "> and parameter_count = #{parameterCount}</if>
+            <if test="parameterType != null  and parameterType != ''"> and parameter_type = #{parameterType}</if>
+            <if test="optionData != null  and optionData != ''"> and option_data = #{optionData}</if>
+        </where>
+    </select>
+    
+    <select id="selectMocksysFunctionInfoById" parameterType="Integer" resultMap="MocksysFunctionInfoResult">
+        <include refid="selectMocksysFunctionInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertMocksysFunctionInfo" parameterType="MocksysFunctionInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into mocksys_function_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">name,</if>
+            <if test="cnName != null">CN_name,</if>
+            <if test="msgType != null">msg_type,</if>
+            <if test="action != null">action,</if>
+            <if test="parameterCount != null">parameter_count,</if>
+            <if test="parameterType != null">parameter_type,</if>
+            <if test="optionData != null">option_data,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="cnName != null">#{cnName},</if>
+            <if test="msgType != null">#{msgType},</if>
+            <if test="action != null">#{action},</if>
+            <if test="parameterCount != null">#{parameterCount},</if>
+            <if test="parameterType != null">#{parameterType},</if>
+            <if test="optionData != null">#{optionData},</if>
+         </trim>
+    </insert>
+
+    <update id="updateMocksysFunctionInfo" parameterType="MocksysFunctionInfo">
+        update mocksys_function_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="cnName != null">CN_name = #{cnName},</if>
+            <if test="msgType != null">msg_type = #{msgType},</if>
+            <if test="action != null">action = #{action},</if>
+            <if test="parameterCount != null">parameter_count = #{parameterCount},</if>
+            <if test="parameterType != null">parameter_type = #{parameterType},</if>
+            <if test="optionData != null">option_data = #{optionData},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMocksysFunctionInfoById" parameterType="Integer">
+        delete from mocksys_function_info where id = #{id}
+    </delete>
+
+    <delete id="deleteMocksysFunctionInfoByIds" parameterType="String">
+        delete from mocksys_function_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
