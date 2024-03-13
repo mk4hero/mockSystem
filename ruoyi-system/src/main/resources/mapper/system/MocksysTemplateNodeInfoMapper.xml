@@ -128,4 +128,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </delete>
+
+    <update id="updateChildrenSignAndLoopCount" parameterType="map">
+        update mocksys_template_node_info
+        SET sign = #{sign}, loop_count = #{loopCount}
+        WHERE id IN
+        <!-- 使用动态 SQL 构建 IN 子句 -->
+        <foreach collection="childrenIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

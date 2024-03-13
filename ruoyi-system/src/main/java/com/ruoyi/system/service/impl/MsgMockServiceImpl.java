@@ -503,6 +503,9 @@ public class MsgMockServiceImpl implements IMsgMockService {
                             String sourceFlStr = (String) sourceData;
                             String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
 
+                            /**原定长字符串字段对齐方式*/
+                            String sourceAlignment = parameterJsonMap.get("sourceAlignment");
+                            parameterJsonMap.remove("sourceAlignment");
                             /**原报文定长字符串补位用特殊字符*/
                             String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                             parameterJsonMap.remove("sourcePlaceholders");
@@ -679,6 +682,9 @@ public class MsgMockServiceImpl implements IMsgMockService {
                             String sourceFlStr = (String) sourceData;
                             String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
 
+                            /**原定长字符串字段对齐方式*/
+                            String sourceAlignment = parameterJsonMap.get("sourceAlignment");
+                            parameterJsonMap.remove("sourceAlignment");
                             /**原报文定长字符串补位用特殊字符*/
                             String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                             parameterJsonMap.remove("sourcePlaceholders");
@@ -758,6 +764,9 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>(){});//关键所在，转化为有序的
                     }
 
+                    /** 目标定长字符串字段对齐方式 */
+                    String targetAlignment = parameterJsonMap.get("targetAlignment");
+                    parameterJsonMap.remove("targetAlignment");
                     /** 目标报文定长字符串补位用特殊字符 */
                     String targetPlaceholders = parameterJsonMap.get("targetPlaceholders");
                     parameterJsonMap.remove("targetPlaceholders");
@@ -792,6 +801,9 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         String sourceFlStr = (String) sourceData;
                         targetValue = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
 
+                        /**原定长字符串字段对齐方式*/
+                        String sourceAlignment = parameterJsonMap.get("sourceAlignment");
+                        parameterJsonMap.remove("sourceAlignment");
                         /**原报文定长字符串补位用特殊字符*/
                         String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                         parameterJsonMap.remove("sourcePlaceholders");
@@ -1143,7 +1155,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 natureTree.setNumber(dto.getNumber());
                 natureTree.setBusiCode(dto.getBusiCode());
                 natureTree.setMsgType(dto.getMsgType());
-                natureTree.setSign("");
+                natureTree.setSign(dto.getSign());
                 natureTree.setLocation(dto.getLocation());
                 natureTree.setLength(dto.getLength());
                 natureTree.setLoopCount(dto.getLoopCount());

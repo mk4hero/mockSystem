@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper.mock;
 
 import com.ruoyi.system.domain.mock.MocksysTemplateNodeInfo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -59,4 +60,12 @@ public interface MocksysTemplateNodeInfoMapper
      * @return 结果
      */
     public int deleteMocksysTemplateNodeInfoByIds(Integer[] ids);
+
+    /**
+     * 修改所有字节的是否为循环字段状态
+     * @param childrenIds
+     * @param sign
+     * @return
+     */
+    public int updateChildrenSignAndLoopCount(@Param("childrenIds") List<Integer> childrenIds, @Param("sign") String sign, @Param("loopCount") int loopCount);
 }

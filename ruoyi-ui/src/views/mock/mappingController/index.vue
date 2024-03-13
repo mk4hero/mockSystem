@@ -63,7 +63,6 @@
                     <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
                 <span>{{ data.label }}</span>
                 <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
-
               </div>
 
               <div v-else>
@@ -86,6 +85,9 @@
                     <path d="M888.3 693.2c-42.5-24.6-94.3-18-129.2 12.8l-53-30.7V523.6c0-15.7-8.4-30.3-22-38.1l-136-78.3v-67.1c44.2-15 76-56.8 76-106.1 0-61.9-50.1-112-112-112s-112 50.1-112 112c0 49.3 31.8 91.1 76 106.1v67.1l-136 78.3c-13.6 7.8-22 22.4-22 38.1v151.6l-53 30.7c-34.9-30.8-86.8-37.4-129.2-12.8-53.5 31-71.7 99.4-41 152.9 30.8 53.5 98.9 71.9 152.2 41 42.5-24.6 62.7-73 53.6-118.8l48.7-28.3 140.6 81c6.8 3.9 14.4 5.9 22 5.9s15.2-2 22-5.9L674.5 740l48.7 28.3c-9.1 45.7 11.2 94.2 53.6 118.8 53.3 30.9 121.5 12.6 152.2-41 30.8-53.6 12.6-122-40.7-152.9zm-673 138.4a47.6 47.6 0 0 1-65.2-17.6c-13.2-22.9-5.4-52.3 17.5-65.5a47.6 47.6 0 0 1 65.2 17.6c13.2 22.9 5.4 52.3-17.5 65.5zM522 463.8zM464 234a48.01 48.01 0 0 1 96 0 48.01 48.01 0 0 1-96 0zm170 446.2l-122 70.3-122-70.3V539.8l122-70.3 122 70.3v140.4zm239.9 133.9c-13.2 22.9-42.4 30.8-65.2 17.6-22.8-13.2-30.7-42.6-17.5-65.5s42.4-30.8 65.2-17.6c22.9 13.2 30.7 42.5 17.5 65.5z"></path></svg></i>
                 <span>{{ data.label }}</span>
                 <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
+
+                <!--针对定长字符串区分可循环字段-->
+                <el-button type="success" round size="mini" v-if="data.msgType == 'flStr' && data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
               </div>
             </template>
           </span>
@@ -158,7 +160,7 @@
                   <el-button type="primary" round size="mini" v-if="data.havaRule"
                              @click="heightLight(data)"
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
-<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
+
                 </div>
 
                 <div v-else>
@@ -173,7 +175,7 @@
                   <el-button type="primary" round size="mini" v-if="data.havaRule"
                              @click="heightLight(data)"
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
-<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
+
                 </div>
               </template>
 
@@ -190,7 +192,9 @@
                   <el-button type="primary" round size="mini" v-if="data.havaRule"
                              @click="heightLight(data)"
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
-<!--                  <i class="el-icon-basketball" v-if="data.havaRule"></i>-->
+
+                  <!--针对定长字符串区分可循环字段-->
+                  <el-button type="success" round size="mini" v-if="data.msgType == 'flStr' && data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
                 </div>
               </template>
             </span>
@@ -320,7 +324,7 @@
             {{ item.number }}
           </el-descriptions-item>
         </el-descriptions>
-        <el-form class="form" :ref="`loopForm-${item.key}`" :model="item" label-width="100px">
+        <el-form class="form" :ref="`loopForm-${item.key}`" :model="item" label-position="top" label-width="100px">
           <el-row>
             <el-col :span="12">
               <el-form-item label="操作类型" prop="action" label-width="100px">
@@ -336,7 +340,8 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="操作函数" prop="operate" label-width="100px">
-                <el-select clearable v-model="item.operate" placeholder="请选择操作函数" @change="selectChange($event, item)">
+                <el-select clearable style="width: auto"
+                           v-model="item.operate" placeholder="请选择操作函数" @change="selectChange($event, item)">
                   <el-option
                     v-for="dict in dict.type.mock_function"
                     :key="dict.value"
@@ -347,21 +352,24 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row>
+          <el-row v-if="item.funcRemarkFlag">
             <el-col :span="24">
-              <el-form-item label="原定长字符串占位符" prop="operate" label-width="100px" v-if="item.sourcePlaceholdersFlag">
-                <el-input v-model="item.sourcePlaceholders" placeholder="请输入占位符"></el-input>
-              </el-form-item>
-              <el-form-item label="目标定长字符串占位符" prop="operate" label-width="100px" v-if="item.targetPlaceholdersFlag">
-                <el-input v-model="item.targetPlaceholders" placeholder="请输入占位符"></el-input>
-              </el-form-item>
-              <el-form-item v-for="(parameterItem, k) in item.parameterInputPart" :prop="`parameterInputPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
-                <el-input v-model="parameterItem.value" :placeholder=parameterItem.placeholder></el-input>
-              </el-form-item>
-              <el-form-item v-for="(parameterItem, k) in item.parameterSelectPart" :prop="`parameterSelectPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
-                <el-select clearable v-model="parameterItem.value" :placeholder=parameterItem.placeholder>
+              <el-alert
+                title="函数说明"
+                type="info"
+                show-icon
+                center
+                :description="item.funcRemark"
+                close-text="知道了">
+              </el-alert>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="原定长字符串字段对齐方式" prop="sourceAlignment" label-width="auto" v-if="item.sourceAlignmentFlag">
+                <el-select clearable v-model="item.sourceAlignment" placeholder="请选择对齐方式">
                   <el-option
-                    v-for="dict in parameterItem.option"
+                    v-for="dict in dict.type.mock_flStr_Alignment"
                     :key="dict.dictValue"
                     :label="dict.dictLabel"
                     :value="dict.dictValue"
@@ -369,6 +377,45 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col :span="12">
+              <el-form-item label="原定长字符串占位符" prop="sourcePlaceholders" label-width="auto" v-if="item.sourcePlaceholdersFlag">
+                <el-input v-model="item.sourcePlaceholders" placeholder="请输入占位符"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="目标定长字符串字段对齐方式" prop="targetAlignment" label-width="auto" v-if="item.targetAlignmentFlag">
+                <el-select clearable v-model="item.targetAlignment" placeholder="请选择对齐方式">
+                  <el-option
+                    v-for="dict in dict.type.mock_flStr_Alignment"
+                    :key="dict.dictValue"
+                    :label="dict.dictLabel"
+                    :value="dict.dictValue"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="目标定长字符串字段对齐方式" prop="targetPlaceholders" label-width="auto" v-if="item.targetPlaceholdersFlag">
+                <el-input v-model="item.targetPlaceholders" placeholder="请输入占位符"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-form-item v-for="(parameterItem, k) in item.parameterInputPart" :prop="`parameterInputPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
+              <el-input v-model="parameterItem.value" :placeholder=parameterItem.placeholder></el-input>
+            </el-form-item>
+            <el-form-item v-for="(parameterItem, k) in item.parameterSelectPart" :prop="`parameterSelectPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
+              <el-select clearable v-model="parameterItem.value" :placeholder=parameterItem.placeholder>
+                <el-option
+                  v-for="dict in parameterItem.option"
+                  :key="dict.dictValue"
+                  :label="dict.dictLabel"
+                  :value="dict.dictValue"
+                ></el-option>
+              </el-select>
+            </el-form-item>
           </el-row>
         </el-form>
         <el-divider><i class="el-icon-sugar"></i></el-divider>
@@ -389,11 +436,16 @@ import Treeselect from "@riophae/vue-treeselect";
 import {listInfo} from "@/api/mock/functionInfo";
 import {getDicts} from "@/api/system/dict/data";
 
+const ACTION_MAPPING_HIGHLIGHT = 'mappingHightLight';
+const ACTION_RELOAD_HAVERULE = 'reloadHavaRule';
+
 export default {
   name: "moduleList",
   components: {Treeselect},
-  dicts: ['mock_msg_type', 'mock_mapping_action', 'mock_function'],
+  // 字典数据列表
+  dicts: ['mock_msg_type', 'mock_mapping_action', 'mock_function', 'mock_flStr_Alignment'],
   mounted() {
+    // 页面加载完成后执行获取函数列表方法
     this.getFuncList();
   },
   data(){
@@ -412,7 +464,7 @@ export default {
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 100,
         sourceBusiCode: undefined,
         sourceMsgType: undefined,
         targetBusiCode: undefined,
@@ -605,7 +657,7 @@ export default {
       mappingList(this.queryParams).then(response => {
           this.tableData = response.rows;
           // 右侧树 进行处理，存在映射规则的节点增加标记
-          this.traverseRightTree(this.rightMsgOptions, "mappingHightLight");
+          this.traverseRightTree(this.rightMsgOptions, ACTION_MAPPING_HIGHLIGHT);
 
           this.total = response.total;
           this.loading = false;
@@ -615,14 +667,14 @@ export default {
     traverseRightTree(nodes, action) {
       if (!nodes || nodes.length === 0) return;
       nodes.forEach(node => {
-        if(action == "mappingHightLight"){
+        if(action == ACTION_MAPPING_HIGHLIGHT){
           for(let item of this.tableData){
             if(item.targetNumber == node.number){
               node.havaRule = true;
               node.mappingNumber = item.sourceNumber;
             }
           }
-        }else if(action == "reloadHavaRule"){
+        }else if(action == ACTION_RELOAD_HAVERULE){
           node.havaRule = false;
         }
         if (node.children && node.children.length > 0) {
@@ -635,11 +687,11 @@ export default {
     traverseLeftTree(nodes, mappingNumber, action) {
       if (!nodes || nodes.length === 0) return;
       nodes.forEach(node => {
-        if(action == "mappingHightLight"){
+        if(action == ACTION_MAPPING_HIGHLIGHT){
           if(mappingNumber == node.number){
             node.havaRule = !node.havaRule;
           }
-        }else if(action == "reloadHavaRule"){
+        }else if(action == ACTION_RELOAD_HAVERULE){
           node.havaRule = false;
         }
 
@@ -653,7 +705,7 @@ export default {
 
     /** 通过映射关系，使左侧树节点高亮 */
     heightLight(data){
-      this.traverseLeftTree(this.leftMsgOptions, data.mappingNumber, "mappingHightLight");
+      this.traverseLeftTree(this.leftMsgOptions, data.mappingNumber, ACTION_MAPPING_HIGHLIGHT);
       // 这个动作是为了el-tree重新渲染
       this.leftMsgOptions = [...this.leftMsgOptions]
     },
@@ -681,8 +733,8 @@ export default {
     /** 刷新底部表格 */
     flushTableList(){
       if(this.leftTreeSelectFlag && this.rightTreeSelectFlag){
-        this.traverseLeftTree(this.leftMsgOptions, 0, "reloadHavaRule");
-        this.traverseRightTree(this.rightMsgOptions, "reloadHavaRule");
+        this.traverseLeftTree(this.leftMsgOptions, 0, ACTION_RELOAD_HAVERULE);
+        this.traverseRightTree(this.rightMsgOptions, ACTION_RELOAD_HAVERULE);
         this.getList();
       }
     },
@@ -697,10 +749,17 @@ export default {
       for( var i = 0 ; i < this.rightNodeArray.length ; i++ ){
         this.$set(this.rightNodeArray[i],'parameterInputPart',[])
         this.$set(this.rightNodeArray[i],'parameterSelectPart',[])
+
+        this.$set(this.rightNodeArray[i], 'funcRemarkFlag', false)
+        this.$set(this.rightNodeArray[i], 'funcRemark', "")
         if(this.leftQueryParams.msgType == "flStr"){
+          this.$set(this.rightNodeArray[i],'sourceAlignmentFlag', true)
+          this.$set(this.rightNodeArray[i],'sourceAlignment', "")
           this.$set(this.rightNodeArray[i],'sourcePlaceholdersFlag', true)
           this.$set(this.rightNodeArray[i],'sourcePlaceholders', "")
           if(this.rightQueryParams.msgType == "flStr"){
+            this.$set(this.rightNodeArray[i],'targetAlignmentFlag', true)
+            this.$set(this.rightNodeArray[i],'targetAlignment', "")
             this.$set(this.rightNodeArray[i],'targetPlaceholdersFlag', true)
             this.$set(this.rightNodeArray[i],'targetPlaceholders', "")
           }
@@ -787,6 +846,8 @@ export default {
         // }
       // });
     },
+
+    /** 节点映射规则参数json格式处理 */
     processing(from){
       let jsonList = [];
       for(let rightNode of from){
@@ -820,12 +881,20 @@ export default {
         mocksysMappingInfo.operate = rightNode.operate;
 
         var parameter = {}
+
+        if(rightNode.sourceAlignmentFlag){
+          parameter.sourceAlignment = rightNode.sourceAlignment;
+        }
         if(rightNode.sourcePlaceholdersFlag){
           parameter.sourcePlaceholders = rightNode.sourcePlaceholders;
+        }
+        if(rightNode.targetAlignmentFlag){
+          parameter.targetAlignment = rightNode.targetAlignment;
         }
         if(rightNode.targetPlaceholdersFlag){
           parameter.targetPlaceholders = rightNode.targetPlaceholders;
         }
+
         if(rightNode.parameterSelectPart != null){
           if(rightNode.parameterSelectPart.length > 0){
             for(let parameterSelect of rightNode.parameterSelectPart){
@@ -847,6 +916,7 @@ export default {
       }
       return jsonList;
     },
+
     /** 取消按钮 */
     cancel() {
       this.loopForm = [];
@@ -914,6 +984,14 @@ export default {
             };
             node.parameterSelectPart.push(parameterItem)
           }
+        }
+      }
+
+      /** 增加函数方法使用说明 */
+      for(let item of this.dict.type.mock_function){
+        if(item.value == value){
+          node.funcRemarkFlag = true;
+          node.funcRemark = item.raw.remark;
         }
       }
     },

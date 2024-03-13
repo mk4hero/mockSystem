@@ -84,10 +84,14 @@
                            :width="flexColumnWidth('path',tableData)"
                            v-if="msgTypeFlag != 'flStr'"
           />
-          <el-table-column label="同名同级元素标识"  key="sign" prop="sign" align="center" v-if="msgTypeFlag == 'xml'"/>
+          <el-table-column label="循环字段标识"  key="sign" prop="sign" align="center">
+            <template slot-scope="scope">
+              <dict-tag :options="dict.type.sys_yes_no_num" :value="scope.row.sign"/>
+            </template>
+          </el-table-column>
           <el-table-column label="定长字符串字段起始位置"  key="location" prop="location" align="center" v-if="msgTypeFlag == 'flStr'"/>
           <el-table-column label="定长字符串字段长度"  key="length" prop="length" align="center" v-if="msgTypeFlag == 'flStr'"/>
-          <el-table-column label="定长字符串可循环部分循环次数"  key="loopCount" prop="loopCount" align="center" v-if="msgTypeFlag == 'flStr'"/>
+          <el-table-column label="可循环部分循环次数"  key="loopCount" prop="loopCount" align="center"/>
           <el-table-column label="定长字符串可循环部分单次字符长度"  key="loopLength" prop="loopLength" align="center" v-if="msgTypeFlag == 'flStr'"/>
           <el-table-column
             label="操作"
@@ -182,9 +186,9 @@
         <el-descriptions-item v-if="form.msgType == 'xml'">
           <template slot="label">
             <i class="el-icon-s-help"></i>
-            同级重名元素标识
+            循环字段标识
           </template>
-          {{ form.sign }}
+          {{showDictValue(form.sign, dict.type.sys_yes_no_num)}}
         </el-descriptions-item>
         <el-descriptions-item v-if="form.msgType != 'flStr'">
           <template slot="label">
@@ -198,7 +202,7 @@
             <i class="el-icon-s-help"></i>
             是否为叶子节点
           </template>
-          {{ form.isSonNode }}
+          {{showDictValue(form.isSonNode, dict.type.sys_yes_no_boolean)}}
         </el-descriptions-item>
         <el-descriptions-item v-if="form.msgType == 'flStr'">
           <template slot="label">
@@ -218,48 +222,49 @@
         <el-divider><i class="el-icon-sugar"></i></el-divider>
         <el-form ref="form" :model="form" v-if="action != 'look'" label-position="top" label-width="80px">
           <el-row>
-            <el-col :span="8">
-              <div style="text-align: center;">
-                <el-form-item label="报文类型" prop="msgType" style="display: inline-block;margin: 0 auto;">
-                  <el-select v-model="form.msgType" placeholder="请选择报文类型" :disabled="this.action == 'look'">
-                    <el-option
-                      v-for="dict in dict.type.mock_msg_type"
-                      :key="dict.value"
-                      :label="dict.label"
-                      :value="dict.value"
-                    ></el-option>
-                  </el-select>
-                </el-form-item>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div style="text-align: center;">
-                <el-form-item label="交易码" prop="busiCode" style="display: inline-block;margin: 0 auto;">
-                  <el-input v-model="form.busiCode" placeholder="请输入交易码" maxlength="30" :disabled="this.action == 'look'"/>
-                </el-form-item>
-              </div>
-            </el-col>
+<!--            <el-col :span="8">-->
+<!--              <div style="text-align: center;">-->
+<!--                <el-form-item label="报文类型" prop="msgType" style="display: inline-block;margin: 0 auto;">-->
+<!--                  <el-select v-model="form.msgType" placeholder="请选择报文类型" :disabled="this.action == 'look'">-->
+<!--                    <el-option-->
+<!--                      v-for="dict in dict.type.mock_msg_type"-->
+<!--                      :key="dict.value"-->
+<!--                      :label="dict.label"-->
+<!--                      :value="dict.value"-->
+<!--                    ></el-option>-->
+<!--                  </el-select>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
+<!--            </el-col>-->
+<!--            <el-col :span="8">-->
+<!--              <div style="text-align: center;">-->
+<!--                <el-form-item label="交易码" prop="busiCode" style="display: inline-block;margin: 0 auto;">-->
+<!--                  <el-input v-model="form.busiCode" placeholder="请输入交易码" maxlength="30" :disabled="this.action == 'look'"/>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
+<!--            </el-col>-->
+
+          </el-row>
+
+          <el-row type="flex" align="bottom">
+<!--            <el-col :span="8">-->
+<!--              <div style="text-align: center;">-->
+<!--                <el-form-item label="渠道" prop="channel" style="display: inline-block;margin: 0 auto;" >-->
+<!--                  <el-select v-model="form.channel" placeholder="请选择渠道" clearable :disabled="this.action == 'look'">-->
+<!--                    <el-option-->
+<!--                      v-for="dict in dict.type.sys_channel_type"-->
+<!--                      :key="dict.value"-->
+<!--                      :label="dict.label"-->
+<!--                      :value="dict.value"-->
+<!--                    ></el-option>-->
+<!--                  </el-select>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
+<!--            </el-col>-->
             <el-col :span="8">
               <div style="text-align: center;">
                 <el-form-item label="字段名称" prop="fieldName" style="display: inline-block;margin: 0 auto;">
                   <el-input v-model="form.fieldName" placeholder="请输入字段名称" maxlength="30" :disabled="this.action == 'look'"/>
-                </el-form-item>
-              </div>
-            </el-col>
-          </el-row>
-
-          <el-row type="flex" align="bottom">
-            <el-col :span="8">
-              <div style="text-align: center;">
-                <el-form-item label="渠道" prop="channel" style="display: inline-block;margin: 0 auto;" >
-                  <el-select v-model="form.channel" placeholder="请选择渠道" clearable :disabled="this.action == 'look'">
-                    <el-option
-                      v-for="dict in dict.type.sys_channel_type"
-                      :key="dict.value"
-                      :label="dict.label"
-                      :value="dict.value"
-                    ></el-option>
-                  </el-select>
                 </el-form-item>
               </div>
             </el-col>
@@ -289,16 +294,25 @@
           </el-row>
 
           <el-row type="flex" align="bottom">
-            <el-col :span="12" v-if="form.msgType == 'xml'">
-              <el-form-item label="同级重名元素标识" prop="sign" style="display: inline-block;margin: 0 auto;">
-                <el-input v-model="form.sign" placeholder="请输入同级重名元素标识" maxlength="30" :disabled="this.action == 'look'" />
+            <el-col :span="12">
+              <el-form-item label="是否为循环字段" prop="sign" style="display: inline-block;margin: 0 auto;">
+                <el-tooltip content="请注意：本操作携带级联属性，将会修改其下所有子节点" >
+                  <el-select v-model="form.sign" placeholder="请选择是否为循环字段" :disabled="this.action == 'look'">
+                    <el-option
+                      v-for="dict in dict.type.sys_yes_no_num"
+                      :key="dict.value"
+                      :label="dict.label"
+                      :value="dict.value"
+                    ></el-option>
+                  </el-select>
+                </el-tooltip>
               </el-form-item>
             </el-col>
             <el-col :span="12" v-if="form.msgType != 'flStr'">
               <el-form-item label="是否为叶子节点" prop="isSonNode" style="display: inline-block;margin: 0 auto;">
                 <el-select v-model="form.isSonNode" placeholder="请选择是否为叶子节点" :disabled="this.action == 'look'" >
                   <el-option
-                    v-for="dict in dict.type.sys_yes_no"
+                    v-for="dict in dict.type.sys_yes_no_boolean"
                     :key="dict.value"
                     :label="dict.label"
                     :value="dict.value"
@@ -323,9 +337,9 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="24" v-if="form.msgType == 'flStr'">
-              <el-form-item label="定长字符串可循环部分循环次数" prop="loopCount">
-                <el-input v-model="form.loopCount" placeholder="请输入定长字符串可循环部分循环次数" maxlength="30" :disabled="this.action == 'look'" />
+            <el-col :span="24">
+              <el-form-item label="可循环部分循环次数" prop="loopCount" v-if="form.sign == '1'">
+                <el-input v-model="form.loopCount" placeholder="请输入可循环部分循环次数" maxlength="30" :disabled="this.action == 'look'" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -403,7 +417,7 @@ import {delMapping, getMsgTreeSelect} from "@/api/mock/mappingInfo";
 
 export default {
   name: "moduleList",
-  dicts: ['mock_msg_type', 'mock_msg_action', 'sys_channel_type', 'mock_mapping_action', 'mock_function', 'sys_yes_no'],
+  dicts: ['mock_msg_type', 'mock_msg_action', 'sys_channel_type', 'mock_mapping_action', 'mock_function', 'sys_yes_no', 'sys_yes_no_num', 'sys_yes_no_boolean'],
   data() {
     return {
       // 遮罩层
@@ -433,7 +447,6 @@ export default {
         msgType: "xml",
       },
       rowsData: [],
-      isLook: false,
       // 表单校验
       rules: {
         msgType: [
@@ -491,6 +504,16 @@ export default {
         this.loading = true;
         listInfo(this.queryParams).then(response => {
           this.tableData = response.rows;
+          // 处理一下
+          for(var item of this.tableData){
+            if(item.isSonNode != undefined){
+              if(item.isSonNode){
+                item.isSonNode = "true"
+              }else{
+                item.isSonNode = "false"
+              }
+            }
+          }
           this.total = response.total;
           this.loading = false;
           this.msgTypeFlag = this.queryParams.msgType;
@@ -509,9 +532,10 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false;
+      // 展示报文树结构按钮可用控制
       this.treeBtnFlag = true;
       this.reset();
-      this.isLook = false;
+      // 模式控制
       this.action = "look";
     },
     // 表单重置
@@ -619,7 +643,6 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.isLook = false;
       this.action = "add";
       this.btnClick = false;
       this.title = "新增报文模板";
@@ -629,7 +652,6 @@ export default {
       this.reset();
       this.form = row;
       this.open = true;
-      this.isLook = false;
       this.action = "update";
       this.btnClick = false;
       this.title = "修改报文模板";
@@ -645,7 +667,6 @@ export default {
       this.form = row;
       this.open = true;
       this.title = "查看报文模板";
-      this.isLook = true;
       this.action = "look";
     },
     handleDelete(row) {
@@ -659,23 +680,27 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.btnClick = true;
+          if(this.form.isSonNode == "true"){
+            this.form.isSonNode = true;
+          }else{
+            this.form.isSonNode = false;
+          }
           if (this.form.id != undefined) {
             updateInfo(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
-              this.treeBtnFlag = true;
+              this.treeBtnFlag = true; // 展示报文树结构按钮可用控制
+              this.reset();
+              this.action = "look";
               this.getList();
             });
           } else {
-            if(this.form.isSonNode == "N"){
-              this.form.isSonNode = false;
-            }else{
-              this.form.isSonNode = true;
-            }
             addInfo(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
-              this.treeBtnFlag = true;
+              this.treeBtnFlag = true; // 展示报文树结构按钮可用控制
+              this.reset();
+              this.action = "look";
               this.getList();
             });
           }
@@ -741,6 +766,12 @@ export default {
     lookLookTree(){
       this.lookTree = false;
       this.openTree = true;
+    },
+    /** 这个函数有问题啊，如果哪一天页面性能过低，一定要研究研究这个函数，刷新频率非常高 */
+    showDictValue(val,dictArr){
+      if(val){
+        return dictArr.filter(item=>item.value==val)[0].label;
+      }
     },
   }
 };
