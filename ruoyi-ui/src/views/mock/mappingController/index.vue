@@ -63,6 +63,9 @@
                     <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
                 <span>{{ data.label }}</span>
                 <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
+
+                <!--针对定长字符串区分可循环字段-->
+                <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
               </div>
 
               <div v-else>
@@ -73,6 +76,9 @@
                     <path d="M908 640H804V488c0-4.4-3.6-8-8-8H548v-96h108c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16H368c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h108v96H228c-4.4 0-8 3.6-8 8v152H116c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16H292v-88h440v88H620c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16h288c8.8 0 16-7.2 16-16V656c0-8.8-7.2-16-16-16zm-564 76v168H176V716h168zm84-408V140h168v168H428zm420 576H680V716h168v168z"></path></svg></i>
                 <span>{{ data.label }}</span>
                 <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
+
+                <!--针对定长字符串区分可循环字段-->
+                <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
               </div>
             </template>
 
@@ -87,7 +93,7 @@
                 <el-button type="danger" round size="mini" v-if="data.havaRule" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">我在这里</el-button>
 
                 <!--针对定长字符串区分可循环字段-->
-                <el-button type="success" round size="mini" v-if="data.msgType == 'flStr' && data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
+                <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
               </div>
             </template>
           </span>
@@ -161,6 +167,8 @@
                              @click="heightLight(data)"
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
 
+                  <!--针对定长字符串区分可循环字段-->
+                <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
                 </div>
 
                 <div v-else>
@@ -176,6 +184,8 @@
                              @click="heightLight(data)"
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
 
+                  <!--针对定长字符串区分可循环字段-->
+                <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
                 </div>
               </template>
 
@@ -194,7 +204,7 @@
                              style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">存在映射关系</el-button>
 
                   <!--针对定长字符串区分可循环字段-->
-                  <el-button type="success" round size="mini" v-if="data.msgType == 'flStr' && data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
+                  <el-button type="success" round size="mini" v-if="data.sign == '1'" style="font-size: 13px; padding: 0 5px 0 5px;margin-left: 50px;">循环字段</el-button>
                 </div>
               </template>
             </span>
@@ -279,7 +289,7 @@
       <el-divider><i class="el-icon-sugar"></i></el-divider>
       <div v-for="(item, j) in loopForm" :key="item.key" class="form_content">
         <el-descriptions class="margin-top" :column="3" size="small" border >
-          <template v-for="(item, ind) in leftNodeArray">
+          <template v-for="(item, ind) in form.sourceNodeArray">
             <el-descriptions-item :key="ind">
               <template slot="label">
                 <i class="el-icon-s-help"></i>
@@ -364,15 +374,25 @@
               </el-alert>
             </el-col>
           </el-row>
+
+          <el-row v-if="item.funcRemarkFlag">
+            <el-col :span="24">
+              <div class="dynamic-form-items-container">
+                <dynamic-form-items :items="item.parameterInputPart" v-if="item.operate"></dynamic-form-items>
+                <dynamic-form-items :items="item.parameterSelectPart" v-if="item.operate"></dynamic-form-items>
+              </div>
+            </el-col>
+          </el-row>
           <el-row>
             <el-col :span="12">
               <el-form-item label="原定长字符串字段对齐方式" prop="sourceAlignment" label-width="auto" v-if="item.sourceAlignmentFlag">
                 <el-select clearable v-model="item.sourceAlignment" placeholder="请选择对齐方式">
                   <el-option
                     v-for="dict in dict.type.mock_flStr_Alignment"
-                    :key="dict.dictValue"
-                    :label="dict.dictLabel"
-                    :value="dict.dictValue"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                    :title="dict.raw.remark"
                   ></el-option>
                 </el-select>
               </el-form-item>
@@ -389,37 +409,199 @@
                 <el-select clearable v-model="item.targetAlignment" placeholder="请选择对齐方式">
                   <el-option
                     v-for="dict in dict.type.mock_flStr_Alignment"
-                    :key="dict.dictValue"
-                    :label="dict.dictLabel"
-                    :value="dict.dictValue"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                    :title="dict.raw.remark"
                   ></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="目标定长字符串字段对齐方式" prop="targetPlaceholders" label-width="auto" v-if="item.targetPlaceholdersFlag">
+              <el-form-item label="目标定长字符串占位符" prop="targetPlaceholders" label-width="auto" v-if="item.targetPlaceholdersFlag">
                 <el-input v-model="item.targetPlaceholders" placeholder="请输入占位符"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row>
-            <el-form-item v-for="(parameterItem, k) in item.parameterInputPart" :prop="`parameterInputPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
-              <el-input v-model="parameterItem.value" :placeholder=parameterItem.placeholder></el-input>
-            </el-form-item>
-            <el-form-item v-for="(parameterItem, k) in item.parameterSelectPart" :prop="`parameterSelectPart.${k}.value`" :key="parameterItem.key" :label=parameterItem.label>
-              <el-select clearable v-model="parameterItem.value" :placeholder=parameterItem.placeholder>
-                <el-option
-                  v-for="dict in parameterItem.option"
-                  :key="dict.dictValue"
-                  :label="dict.dictLabel"
-                  :value="dict.dictValue"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-row>
         </el-form>
         <el-divider><i class="el-icon-sugar"></i></el-divider>
       </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 修改查看节点映射对话框 -->
+    <el-dialog :title="modifyTitle" :visible.sync="modifyOpen" append-to-body width="1400px">
+      <el-divider><i class="el-icon-sugar"></i></el-divider>
+        <el-descriptions class="margin-top" :column="5" size="small" border >
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-help"></i>
+              原字段业务号
+            </template>
+            {{ modifyForm.sourceBusiCode }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-help"></i>
+              原字段报文类型
+            </template>
+            {{ modifyForm.sourceMsgType }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-help"></i>
+              原字段名称
+            </template>
+            {{ modifyForm.sourceFieldName }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              原字段路径
+            </template>
+            {{ modifyForm.sourcePath }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-flag"></i>
+              映射用序号
+            </template>
+            {{ modifyForm.sourceNumber }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-help"></i>
+              目标字段业务号
+            </template>
+            {{ modifyForm.targetBusiCode }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-help"></i>
+              目标字段报文类型
+            </template>
+            {{ modifyForm.targetMsgType }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-help"></i>
+              目标字段名称
+            </template>
+            {{ modifyForm.targetFieldName }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              目标字段路径
+            </template>
+            {{ modifyForm.targetPath }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-s-flag"></i>
+              映射用序号
+            </template>
+            {{ modifyForm.targetNumber }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-form class="form" :model="modifyForm" label-position="top" label-width="100px">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="操作类型" prop="action" label-width="100px">
+                <el-select clearable v-model="modifyForm.action" placeholder="请选择操作类型" :disabled="isLook">
+                  <el-option
+                    v-for="dict in dict.type.mock_mapping_action"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="操作函数" prop="operate" label-width="100px">
+                <el-select clearable style="width: auto" :disabled="isLook"
+                           v-model="modifyForm.operate" placeholder="请选择操作函数" @change="selectChange($event, modifyForm)">
+                  <el-option
+                    v-for="dict in dict.type.mock_function"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row v-if="modifyForm.funcRemarkFlag">
+            <el-col :span="24">
+              <el-alert
+                title="函数说明"
+                type="info"
+                show-icon
+                center
+                :description="modifyForm.funcRemark"
+                close-text="知道了">
+              </el-alert>
+            </el-col>
+          </el-row>
+
+          <el-row v-if="modifyForm.funcRemarkFlag">
+            <el-col :span="24">
+              <div class="dynamic-form-items-container">
+                <dynamic-form-items :disabled="isLook" :items="modifyForm.parameterInputPart" v-if="modifyForm.operate"></dynamic-form-items>
+                <dynamic-form-items :disabled="isLook" :items="modifyForm.parameterSelectPart" v-if="modifyForm.operate"></dynamic-form-items>
+              </div>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="原定长字符串字段对齐方式" prop="sourceAlignment" label-width="auto" v-if="modifyForm.sourceAlignment">
+                <el-select clearable v-model="modifyForm.sourceAlignment" placeholder="请选择对齐方式" :disabled="isLook">
+                  <el-option
+                    v-for="dict in dict.type.mock_flStr_Alignment"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                    :title="dict.raw.remark"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="原定长字符串占位符" prop="sourcePlaceholders" label-width="auto" v-if="modifyForm.sourcePlaceholders">
+                <el-input v-model="modifyForm.sourcePlaceholders" placeholder="请输入占位符" :disabled="isLook"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="目标定长字符串字段对齐方式" prop="targetAlignment" label-width="auto" v-if="modifyForm.targetAlignment">
+                <el-select clearable v-model="modifyForm.targetAlignment" placeholder="请选择对齐方式" :disabled="isLook">
+                  <el-option
+                    v-for="dict in dict.type.mock_flStr_Alignment"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                    :title="dict.raw.remark"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="目标定长字符串占位符" prop="targetPlaceholders" label-width="auto" v-if="modifyForm.targetPlaceholders">
+                <el-input v-model="modifyForm.targetPlaceholders" placeholder="请输入占位符" :disabled="isLook"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+
+        <el-divider><i class="el-icon-sugar"></i></el-divider>
 
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -435,13 +617,14 @@ import {addMapping, delMapping, getMsgTreeSelect, mappingList, modifyMapping} fr
 import Treeselect from "@riophae/vue-treeselect";
 import {listInfo} from "@/api/mock/functionInfo";
 import {getDicts} from "@/api/system/dict/data";
+import DynamicFormItems from "@/components/DynamicFormItems/index.vue";
 
 const ACTION_MAPPING_HIGHLIGHT = 'mappingHightLight';
 const ACTION_RELOAD_HAVERULE = 'reloadHavaRule';
 
 export default {
   name: "moduleList",
-  components: {Treeselect},
+  components: {Treeselect, DynamicFormItems},
   // 字典数据列表
   dicts: ['mock_msg_type', 'mock_mapping_action', 'mock_function', 'mock_flStr_Alignment'],
   mounted() {
@@ -533,6 +716,7 @@ export default {
       funcInfoTotal: undefined,
       addDicts: {},
       addFormItemInfo: {},
+      jsonObjParameter: {},
     }
   },
   methods: {
@@ -801,7 +985,18 @@ export default {
     handleUpdate(row) {
       this.modifyReset();
       this.modifyForm = row;
-      this.modifyOpen = true;
+      let jsonStrParameter = row.parameter;
+      this.jsonObjParameter = JSON.parse(jsonStrParameter);
+
+      this.$set(this.modifyForm, 'parameterInputPart',[])
+      this.$set(this.modifyForm, 'parameterSelectPart',[])
+      this.$set(this.modifyForm, 'sourceAlignment', this.jsonObjParameter.sourceAlignment)
+      this.$set(this.modifyForm, 'sourcePlaceholders', this.jsonObjParameter.sourcePlaceholders)
+      this.$set(this.modifyForm, 'targetAlignment', this.jsonObjParameter.targetAlignment)
+      this.$set(this.modifyForm, 'targetPlaceholders', this.jsonObjParameter.targetPlaceholders)
+
+      this.selectChange(row.operate, this.modifyForm);
+
       this.modifyTitle = "修改字段映射规则";
       this.isLook = false;
     },
@@ -809,40 +1004,56 @@ export default {
     look(row){
       this.modifyReset();
       this.modifyForm = row;
-      this.modifyOpen = true;
+      let jsonStrParameter = row.parameter;
+      this.jsonObjParameter = JSON.parse(jsonStrParameter);
+
+      this.$set(this.modifyForm, 'parameterInputPart',[])
+      this.$set(this.modifyForm, 'parameterSelectPart',[])
+      this.$set(this.modifyForm, 'sourceAlignment', this.jsonObjParameter.sourceAlignment)
+      this.$set(this.modifyForm, 'sourcePlaceholders', this.jsonObjParameter.sourcePlaceholders)
+      this.$set(this.modifyForm, 'targetAlignment', this.jsonObjParameter.targetAlignment)
+      this.$set(this.modifyForm, 'targetPlaceholders', this.jsonObjParameter.targetPlaceholders)
+
+      this.selectChange(row.operate, this.modifyForm);
+
       this.modifyTitle = "查看字段映射规则";
       this.isLook = true;
+    },
+    modifyReset(){
+      this.modifyForm = {};
+      this.jsonObjParameter = {};
+      this.modifyOpen = true;
     },
     /** 节点映射规则删除 */
     handleDelete(row) {
       delMapping(row.id).then(response => {
         this.$modal.msgSuccess("删除成功");
-        this.getList();
+        this.getRightMsgTree();
       });
     },
     /** 提交按钮 */
     submitForm: function() {
       // this.$refs["form"].validate(valid => {
       //   if (valid) {
-          // if (this.modifyForm.id != undefined) {
-          //   modifyMapping(this.modifyForm).then(response => {
-          //     this.$modal.msgSuccess("修改成功");
-          //     this.modifyOpen = false;
-          //     this.getList();
-          //   });
-          // } else {
-          addMapping(this.processing(this.loopForm)).then(response => {
-            this.$message({
-              showClose: true,
-              message: '添加成功',
-              type: 'success'
+          if (this.modifyForm.id != undefined) {
+            modifyMapping(this.processingForUpdate(this.modifyForm)).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.modifyOpen = false;
+              this.getList();
             });
-            this.open = false;
-            this.getList();
-            this.$refs.leftTree.setCheckedKeys([]);
-            this.$refs.rightTree.setCheckedKeys([]);
-          });
-          // }
+          } else {
+            addMapping(this.processing(this.loopForm)).then(response => {
+              this.$message({
+                showClose: true,
+                message: '添加成功',
+                type: 'success'
+              });
+              this.open = false;
+              this.getList();
+              this.$refs.leftTree.setCheckedKeys([]);
+              this.$refs.rightTree.setCheckedKeys([]);
+            });
+          }
         // }
       // });
     },
@@ -917,13 +1128,77 @@ export default {
       return jsonList;
     },
 
+    processingForUpdate(from){
+      let mocksysMappingInfo = {
+        "id": from.id,
+        "sourceBusiCode" : from.sourceBusiCode,
+        "sourceMsgType" : from.sourceMsgType,
+        "sourceFieldName" : from.sourceFieldName,
+        "sourceNumber" : from.sourceNumber,
+        "sourcePath" : from.sourcePath,
+        "sourceSign" : from.sourceSign,
+        "sourceLocation" : from.sourceLocation,
+        "sourceLength" : from.sourceLength,
+        "sourceLoopCount" : from.sourceLoopCount,
+        "sourceLoopLength" : from.sourceLoopLength,
+
+      }
+
+      var num = 1;
+      mocksysMappingInfo.targetBusiCode = from.targetBusiCode;
+      mocksysMappingInfo.targetMsgType = from.targetMsgType;
+      mocksysMappingInfo.targetFieldName = from.targetFieldName;
+      mocksysMappingInfo.targetNumber = from.targetNumber;
+      mocksysMappingInfo.targetPath = from.targetPath;
+      mocksysMappingInfo.targetSign = from.targetSign;
+      mocksysMappingInfo.targetLocation = from.targetLocation;
+      mocksysMappingInfo.targetLength = from.targetLength;
+      mocksysMappingInfo.targetLoopCount = from.targetLoopCount;
+      mocksysMappingInfo.targetLoopLength = from.targetLoopLength;
+
+      mocksysMappingInfo.action = from.action;
+      mocksysMappingInfo.operate = from.operate;
+
+      var parameter = {}
+
+      if(from.sourceAlignment){
+        parameter.sourceAlignment = from.sourceAlignment;
+      }
+      if(from.sourcePlaceholders){
+        parameter.sourcePlaceholders = from.sourcePlaceholders;
+      }
+      if(from.targetAlignment){
+        parameter.targetAlignment = from.targetAlignment;
+      }
+      if(from.targetPlaceholders){
+        parameter.targetPlaceholders = from.targetPlaceholders;
+      }
+
+      if(from.parameterSelectPart != null){
+        if(from.parameterSelectPart.length > 0){
+          for(let parameterSelect of from.parameterSelectPart){
+            parameter["value" + num] = parameterSelect.value;
+            num++;
+          }
+        }
+      }
+      if(from.parameterInputPart != null){
+        if(from.parameterInputPart.length > 0){
+          for(let parameterInput of from.parameterInputPart){
+            parameter["value" + num] = parameterInput.value;
+            num++;
+          }
+        }
+      }
+      mocksysMappingInfo.parameter = JSON.stringify(parameter);
+      return mocksysMappingInfo;
+    },
     /** 取消按钮 */
     cancel() {
       this.loopForm = [];
       this.open = false;
       this.modifyOpen = false;
       this.reset();
-      this.modifyReset();
       this.$refs.leftTree.setCheckedKeys([]);
       this.$refs.rightTree.setCheckedKeys([]);
       this.leftNodeArray = [];
@@ -939,11 +1214,6 @@ export default {
         targetNodeArray: [],
       };
       this.resetForm("form");
-    },
-    /** 更新表单重置 */
-    modifyReset() {
-      this.modifyForm = {};
-      this.resetForm("modifyForm");
     },
 /*************************************************************************************/
     selectChange(value, node){
@@ -973,6 +1243,8 @@ export default {
               label: "函数参数" + (i+1),
               key : i + baseKey + "-InputPart",
               placeholder : parameterType[i].dictLabel,
+              type: "input",
+              value: this.jsonObjParameter["value" + (i + 1)]
             };
             node.parameterInputPart.push(parameterItem)
           }else if(parameterType[i].dictValue == "select"){
@@ -980,7 +1252,9 @@ export default {
               label: "函数参数" + (i+1),
               key : i + baseKey + "-SelectPart",
               placeholder : parameterType[i].dictLabel,
-              option : this.addDicts[optionName],
+              options : this.addDicts[optionName],
+              type: "select",
+              value: this.jsonObjParameter["value" + (i + 1)]
             };
             node.parameterSelectPart.push(parameterItem)
           }
@@ -1097,5 +1371,20 @@ export default {
   .app-container /deep/ .el-tree .el-tree-node__content:has(.is-leaf){
     // color: aqua;
     margin-left: 24px !important;
+  }
+
+  .dynamic-form-items-container {
+    /* 设置容器的位置 */
+    position: relative;
+    top: -20px; /* 例如，向上偏移 20px，可以根据实际情况调整 */
+  }
+
+  input::placeholder {
+    color: #999; /* 设置空格颜色为灰色 */
+  }
+
+  input {
+    letter-spacing: 2px; /* 增加空格大小 */
+    background-color: rgba(0, 0, 0, 0.1); /* 设置空格背景色为浅灰色 */
   }
 </style>
