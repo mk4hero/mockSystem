@@ -31,8 +31,8 @@ public class MockSysController extends BaseController
 
     @GetMapping("/msgDispose")
     public AjaxResult msgDispose(HttpServletRequest request) throws GlobalException, IOException {
-        esbMsgService.doEBKProcess(request);
-        return success("成功");
+        String respData = esbMsgService.doEBKProcess(request);
+        return success(respData);
     }
 
     @GetMapping("/getTree")

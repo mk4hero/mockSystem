@@ -2,8 +2,6 @@ package com.ruoyi.system.service.impl;
 
 import com.alibaba.fastjson.*;
 import com.alibaba.fastjson.parser.Feature;
-import com.ruoyi.common.core.domain.TreeSelect;
-import com.ruoyi.common.enums.MsgType;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.mock.FlStrMsgFuncUtils;
@@ -18,22 +16,10 @@ import com.ruoyi.system.mapper.mock.MocksysMessagesInfoMapper;
 import com.ruoyi.system.mapper.mock.MocksysTemplateNodeInfoDAO;
 import com.ruoyi.system.service.IMsgMockService;
 import org.dom4j.*;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.tree.BaseElement;
-import org.dom4j.tree.DefaultDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.DOMImplementation;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -55,7 +41,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
     @Autowired
     private MocksysMappingInfoDAO mocksysMappingInfoDAO;
 
-    private HashMap<String , Integer> pathMap = new HashMap<>();
+    private HashMap<String ,Integer> pathMap = new HashMap<>();
 
     int msgNnumber = 0;
 
@@ -92,16 +78,23 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 String targetBusiCode = firstMappingInfo.getTargetBusiCode();
                 String targetMsgType = firstMappingInfo.getTargetMsgType();
 
+                MocksysTemplateNodeInfoExample sourceNodeInfoExample = new MocksysTemplateNodeInfoExample();
+                MocksysTemplateNodeInfoExample.Criteria sourceNodeInfoCriteria = sourceNodeInfoExample.createCriteria();
+                sourceNodeInfoCriteria.andBusiCodeEqualTo(busiCode);
+                sourceNodeInfoCriteria.andMsgTypeEqualTo(XML_STR);
+                sourceNodeInfoExample.setOrderByClause("id");
+                List<MocksysTemplateNodeInfo> sourceNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(sourceNodeInfoExample);
+
                 MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
                 MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
                 nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
                 nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
                 nodeInfoExample.setOrderByClause("id");
-                List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
+                List<MocksysTemplateNodeInfo> targetNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
-                if(null != nodeInfoList && nodeInfoList.size() > 0){
+                if(null != targetNodeInfoList && targetNodeInfoList.size() > 0){
                     if(XML_STR.equals(targetMsgType)){
-                        Document targetXml = createXmlMessage(nodeInfoList);
+                        Document targetXml = createXmlMessage(targetNodeInfoList);
                         Element targetRoot = targetXml.getRootElement();
                         logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
@@ -109,19 +102,19 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         responseMsgStr = XmlUtils.format(targetXml.asXML());
                         logger.info("返回xml报文：" + responseMsgStr);
                     } else if (JSON_STR.equals(targetMsgType)) {
-                        JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                        JSONObject targetJsonObj = createJsonMessage(targetNodeInfoList);
                         logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
                         manipulateJsonMessage(sourceRoot, targetJsonObj, mappingInfoList);
                         responseMsgStr = JsonUtils.format(targetJsonObj);
                         logger.info("返回json报文：" + responseMsgStr);
                     } else if (FLSTR_STR.equals(targetMsgType)) {
-                        StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                        StringBuffer targetFlStr = createFlStrMessage(targetNodeInfoList);
                         logger.info("生成模板报文为：" + targetFlStr);
 
                         manipulateFlStrMessage(sourceRoot, targetFlStr, mappingInfoList);
                         responseMsgStr = targetFlStr.toString();
-                        logger.info("返回json报文：" + responseMsgStr);
+                        logger.info("返回定长字符串报文：" + responseMsgStr);
                     } else {
                         logger.error("报文类型判断错误，请检查！");
                     }
@@ -175,16 +168,23 @@ public class MsgMockServiceImpl implements IMsgMockService {
             String targetBusiCode = mappingInfoList.get(0).getTargetBusiCode();
             String targetMsgType = mappingInfoList.get(0).getTargetMsgType();
 
+            MocksysTemplateNodeInfoExample sourceNodeInfoExample = new MocksysTemplateNodeInfoExample();
+            MocksysTemplateNodeInfoExample.Criteria sourceNodeInfoCriteria = sourceNodeInfoExample.createCriteria();
+            sourceNodeInfoCriteria.andBusiCodeEqualTo(busiCode);
+            sourceNodeInfoCriteria.andMsgTypeEqualTo(JSON_STR);
+            sourceNodeInfoExample.setOrderByClause("id");
+            List<MocksysTemplateNodeInfo> sourceNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(sourceNodeInfoExample);
+
             MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
             MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
             nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
             nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
             nodeInfoExample.setOrderByClause("id");
-            List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
+            List<MocksysTemplateNodeInfo> targetNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
-            if(null != nodeInfoList && nodeInfoList.size() > 0){
+            if(null != targetNodeInfoList && targetNodeInfoList.size() > 0){
                 if(XML_STR.equals(targetMsgType)){
-                    Document targetXml = createXmlMessage(nodeInfoList);
+                    Document targetXml = createXmlMessage(targetNodeInfoList);
                     Element targetRoot = targetXml.getRootElement();
                     logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
@@ -192,14 +192,14 @@ public class MsgMockServiceImpl implements IMsgMockService {
                     responseMsgStr = XmlUtils.format(targetXml.asXML());
                     logger.info("返回xml报文：" + responseMsgStr);
                 } else if (JSON_STR.equals(targetMsgType)) {
-                    JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                    JSONObject targetJsonObj = createJsonMessage(targetNodeInfoList);
                     logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
                     manipulateJsonMessage(sourceJsonObject, targetJsonObj, mappingInfoList);
                     responseMsgStr = JsonUtils.format(targetJsonObj);
                     logger.info("返回json报文：" + responseMsgStr);
                 } else if (FLSTR_STR.equals(targetMsgType)) {
-                    StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                    StringBuffer targetFlStr = createFlStrMessage(targetNodeInfoList);
                     logger.info("生成模板报文为：" + targetFlStr);
 
                     manipulateFlStrMessage(sourceJsonObject, targetFlStr, mappingInfoList);
@@ -233,23 +233,30 @@ public class MsgMockServiceImpl implements IMsgMockService {
         saveRequestToDatabase(String.valueOf(sourceFlStr), FLSTR_STR, busiCode);
 
         /** 第一步，获取应映射规则 */
-        List<MocksysMappingInfo> mappingInfoList = getMappingInfoList(JSON_STR, busiCode);
+        List<MocksysMappingInfo> mappingInfoList = getMappingInfoList(FLSTR_STR, busiCode);
 
         /** 第二步，获取目标报文模板 */
         if( null != mappingInfoList && mappingInfoList.size() > 0){
             String targetBusiCode = mappingInfoList.get(0).getTargetBusiCode();
             String targetMsgType = mappingInfoList.get(0).getTargetMsgType();
 
+            MocksysTemplateNodeInfoExample sourceNodeInfoExample = new MocksysTemplateNodeInfoExample();
+            MocksysTemplateNodeInfoExample.Criteria sourceNodeInfoCriteria = sourceNodeInfoExample.createCriteria();
+            sourceNodeInfoCriteria.andBusiCodeEqualTo(busiCode);
+            sourceNodeInfoCriteria.andMsgTypeEqualTo(FLSTR_STR);
+            sourceNodeInfoExample.setOrderByClause("id");
+            List<MocksysTemplateNodeInfo> sourceNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(sourceNodeInfoExample);
+
             MocksysTemplateNodeInfoExample nodeInfoExample = new MocksysTemplateNodeInfoExample();
             MocksysTemplateNodeInfoExample.Criteria nodeInfoCriteria = nodeInfoExample.createCriteria();
             nodeInfoCriteria.andBusiCodeEqualTo(targetBusiCode);
             nodeInfoCriteria.andMsgTypeEqualTo(targetMsgType);
             nodeInfoExample.setOrderByClause("id");
-            List<MocksysTemplateNodeInfo> nodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
+            List<MocksysTemplateNodeInfo> targetNodeInfoList = mocksysTemplateNodeInfoDAO.selectByExample(nodeInfoExample);
 
-            if(null != nodeInfoList && nodeInfoList.size() > 0){
+            if(null != targetNodeInfoList && targetNodeInfoList.size() > 0){
                 if(XML_STR.equals(targetMsgType)){
-                    Document targetXml = createXmlMessage(nodeInfoList);
+                    Document targetXml = createXmlMessage(targetNodeInfoList);
                     Element targetRoot = targetXml.getRootElement();
                     logger.info("生成模板报文为：" + XmlUtils.format(targetXml.asXML()));
 
@@ -257,14 +264,14 @@ public class MsgMockServiceImpl implements IMsgMockService {
                     responseMsgStr = XmlUtils.format(targetXml.asXML());
                     logger.info("返回xml报文：" + responseMsgStr);
                 } else if (JSON_STR.equals(targetMsgType)) {
-                    JSONObject targetJsonObj = createJsonMessage(nodeInfoList);
+                    JSONObject targetJsonObj = createJsonMessage(targetNodeInfoList);
                     logger.info("生成模板报文为：" + JsonUtils.format(targetJsonObj));
 
                     manipulateJsonMessage(String.valueOf(sourceFlStr), targetJsonObj, mappingInfoList);
                     responseMsgStr = JsonUtils.format(targetJsonObj);
                     logger.info("返回json报文：" + responseMsgStr);
                 } else if (FLSTR_STR.equals(targetMsgType)) {
-                    StringBuffer targetFlStr = createFlStrMessage(nodeInfoList);
+                    StringBuffer targetFlStr = createFlStrMessage(targetNodeInfoList);
                     logger.info("生成模板报文为：" + targetFlStr);
 
                     manipulateFlStrMessage(String.valueOf(sourceFlStr), targetFlStr, mappingInfoList);
@@ -466,42 +473,39 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         LinkedHashMap<String, String> parameterJsonMap = new LinkedHashMap<>();
                         if (null != parameter) {
                             JSONObject jsonObject = JSONObject.parseObject(parameter, Feature.OrderedField);
-                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>() {
-                            });//关键所在，转化为有序的
+                            parameterJsonMap = JSON.parseObject(jsonObject.toString(), new TypeReference<LinkedHashMap<String, String>>() {});//关键所在，转化为有序的
                         }
 
                         /** 判断原报文类型，按照不同类型进行对应处理，取出所需字段值，
                          *  再放到目标报文模板中，
                          *  最后按照处理函数对目标报文进行处理 */
                         List<Element> targetElementList = targetRoot.selectNodes(targetPath);
-                        Element targetElement = targetElementList.get(Integer.valueOf(targetSign));
+                        if( null == targetElementList ){
+                            logger.error("根据映射目标路径未找到对应节点，报文模板中没有此字段");
+                        }
 
+                        Element targetElement = null;
                         if (sourceData instanceof Element) {
                             logger.info("原报文 是 xml 类型");
                             Element sourceRoot = (Element) sourceData;
                             List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
+                            targetElement = targetElementList.get(Integer.valueOf(0));
                             Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
                             String value = valueElement.getText();
                             targetElement.setText(value);
                         } else if (sourceData instanceof JSONObject) {
                             logger.info("原报文 是 json 类型");
                             JSONObject sourceJsonObject = (JSONObject) sourceData;
+                            // 单字段映射
                             String value = (String) JSONPath.read(sourceJsonObject.toString(), sourcePath);
-
+                            targetElement = targetElementList.get(Integer.valueOf(0));
                             targetElement.setText(value);
                         } else if (sourceData instanceof String){
                             logger.info("原报文 是 定长字符串 类型");
-
-                            Integer sourceLocation = rule.getSourceLocation();
-                            Integer sourceLength = rule.getSourceLength();
-                            Integer sourceLoopCount = rule.getSourceLoopCount();
-                            Integer sourceLoopLength = rule.getSourceLoopLength();
-
-                            /**todo 应当考虑定长字符串循环字段存在时的处理方式*/
-
-                            // 一般视定长字符串每个字段向左补齐
                             String sourceFlStr = (String) sourceData;
-                            String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
+
+                            Integer sourceLocation = rule.getSourceLocation();// 起始位置
+                            Integer sourceLength = rule.getSourceLength();// 字段长度
 
                             /**原定长字符串字段对齐方式*/
                             String sourceAlignment = parameterJsonMap.get("sourceAlignment");
@@ -509,12 +513,10 @@ public class MsgMockServiceImpl implements IMsgMockService {
                             /**原报文定长字符串补位用特殊字符*/
                             String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                             parameterJsonMap.remove("sourcePlaceholders");
-                            for(int i=0;i < value.length();i++) {
-                                if(!sourcePlaceholders.equals(value.charAt(i))){
-                                    value = value.substring(i);
-                                    break;
-                                }
-                            }
+
+                            String value = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
+                            value = processFixedLengthField(value, sourceAlignment, sourcePlaceholders);
+                            targetElement = targetElementList.get(Integer.valueOf(0));
                             targetElement.setText(value);
                         }
                         xmlNodeDoFunction(operate, parameterJsonMap, targetElement);
@@ -660,9 +662,11 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         /** 原报类型判断 */
                         if (sourceData instanceof Element) {
                             logger.info("原报文 是 xml 类型");
+
                             Element sourceRoot = (Element) sourceData;
                             List<Element> valueElementList = sourceRoot.selectNodes(sourcePath);
                             Element valueElement = valueElementList.get(Integer.valueOf(sourceSign));
+
                             String value = valueElement.getText();
                             JSONPath.set(targetJsonObj, targetPath, value);
                         } else if (sourceData instanceof JSONObject) {
@@ -675,8 +679,6 @@ public class MsgMockServiceImpl implements IMsgMockService {
                             logger.info("原报文 是 定长字符串 类型");
                             Integer sourceLocation = rule.getSourceLocation();
                             Integer sourceLength = rule.getSourceLength();
-                            Integer sourceLoopCount = rule.getSourceLoopCount();
-                            Integer sourceLoopLength = rule.getSourceLoopLength();
 
                             // 一般视定长字符串每个字段向左补齐
                             String sourceFlStr = (String) sourceData;
@@ -688,11 +690,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
                             /**原报文定长字符串补位用特殊字符*/
                             String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                             parameterJsonMap.remove("sourcePlaceholders");
-                            for (int i = 0; i < value.length(); i++) {
-                                if (!sourcePlaceholders.equals(value.charAt(i))) {
-                                    value = value.substring(i);
-                                }
-                            }
+                            value = processFixedLengthField(value, sourceAlignment, sourcePlaceholders);
 
                             JSONPath.set(targetJsonObj, targetPath, value);
                         }
@@ -744,9 +742,6 @@ public class MsgMockServiceImpl implements IMsgMockService {
             String sourceSign = rule.getSourceSign();
             Integer targetLocation = rule.getTargetLocation();
             Integer targetLength = rule.getTargetLength();
-            Integer targetLoopCount = rule.getTargetLoopCount();
-            Integer targetLoopLength = rule.getTargetLoopLength();
-            String sign = rule.getTargetSign();
             String action = rule.getAction();
             String operate = rule.getOperate();
             String parameter = rule.getParameter();
@@ -770,13 +765,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
                     /** 目标报文定长字符串补位用特殊字符 */
                     String targetPlaceholders = parameterJsonMap.get("targetPlaceholders");
                     parameterJsonMap.remove("targetPlaceholders");
-//                        // 判断目标字段是否为循环字段
-//                        if("0".equals(sign)){
-//                            // 不是循环字段
-//                            String targetStr = StringUtils.leftPad("1", 5, "0");
-//                        }else{
-//
-//                        }
+
                     /** 原报类型判断 */
                     String targetValue = "";
                     /** 原报类型判断 */
@@ -795,8 +784,6 @@ public class MsgMockServiceImpl implements IMsgMockService {
 
                         Integer sourceLocation = rule.getSourceLocation();
                         Integer sourceLength = rule.getSourceLength();
-                        Integer sourceLoopCount = rule.getSourceLoopCount();
-                        Integer sourceLoopLength = rule.getSourceLoopLength();
 
                         String sourceFlStr = (String) sourceData;
                         targetValue = sourceFlStr.substring(sourceLocation, sourceLocation + sourceLength);
@@ -807,11 +794,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
                         /**原报文定长字符串补位用特殊字符*/
                         String sourcePlaceholders = parameterJsonMap.get("sourcePlaceholders");
                         parameterJsonMap.remove("sourcePlaceholders");
-                        for (int i = 0; i < targetValue.length(); i++) {
-                            if(!sourcePlaceholders.equals(targetValue.charAt(i))){
-                                targetValue = targetValue.substring(i);
-                            }
-                        }
+                        targetValue = processFixedLengthField(targetValue, sourceAlignment, sourcePlaceholders);
                     }
 
                     flStrMsgDoFunction(operate, parameterJsonMap, targetLocation, targetLength, targetValue, targetPlaceholders, targetFlStr);
@@ -854,6 +837,34 @@ public class MsgMockServiceImpl implements IMsgMockService {
     }
 
     /**
+     * 根据指定的对齐方式和补位字符处理原定长字符串字段
+     * @param value 原定长字符串字段的值
+     * @param alignment 对齐方式，可以是 "left" 表示左对齐，"right" 表示右对齐
+     * @param placeholders 补位用特殊字符
+     * @return 处理后的原定长字符串字段值
+     */
+    public static String processFixedLengthField(String value, String alignment, String placeholders) {
+        if ("left".equals(alignment)) {
+            // 左对齐处理
+            for (int i = 0; i < value.length(); i++) {
+                if (!placeholders.equals(value.charAt(i))) {
+                    value = value.substring(i);
+                    break;
+                }
+            }
+        } else if ("right".equals(alignment)) {
+            // 右对齐处理
+            for (int i = value.length(); i > 0; i--) {
+                if (!placeholders.equals(value.charAt(i - 1))) {
+                    value = value.substring(0, i);
+                    break;
+                }
+            }
+        }
+        return value;
+    }
+
+    /**
      * 按照报文模板数据，生成xml报文对象
      * @param nodeInfoList
      * @return
@@ -873,8 +884,8 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 String parentPath = path.substring(0, path.lastIndexOf("/"));
                 List<Element> parentElementList = root.selectNodes(parentPath);
                 if (null != parentElementList && parentElementList.size() > 0) {
-                    // 找到父节点，创建子节点
-                    Element parentElement = parentElementList.get(Integer.valueOf(item.getSign()));
+                    // 找到父节点，创建子节点，作为模板，循环字段部分只循环一次
+                    Element parentElement = parentElementList.get(0);
                     parentElement.addElement(item.getFieldName());
                 } else {
                     // 未找到父节点，记录错误日志
@@ -894,59 +905,17 @@ public class MsgMockServiceImpl implements IMsgMockService {
         // 创建根 JSON 对象
         JSONObject rootObj = new JSONObject();
 
-        for (MocksysTemplateNodeInfo item : nodeInfoList) {
-            // 如果当前节点不是子节点，即为对象或数组
-            if ("0".equals(item.getIsSonNode())) {
-                // 如果节点为数组元素
-                if ("1".equals(item.getSign())) {
-                    // 创建新的 JSON 数组
-                    JSONArray newArray = new JSONArray();
-
-                    // 获取路径信息
-                    String path = item.getPath();
-                    String parentPath = path.substring(0, path.lastIndexOf("."));
-
-                    // 如果当前节点为根节点下的数组元素
-                    if ("$".equals(parentPath)) {
-                        rootObj.put(item.getFieldName(), newArray);
-                    } else {
-                        // 否则，找到父节点，并将新数组加入到父节点中
-                        JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                        parentObj.put(item.getFieldName(), newArray);
-                    }
-                } else {
-                    // 如果节点为对象元素
-                    JSONObject newObj = new JSONObject();
-
-                    // 获取路径信息
-                    String path = item.getPath();
-                    if (item.getFieldName().contains("[")) {
-                        String parentPath = path.substring(0, path.lastIndexOf("["));
-
-                        JSONArray parentObj = (JSONArray) JSONPath.read(rootObj.toString(), parentPath);
-                        parentObj.add(newObj);
-                    } else {
-                        String parentPath = path.substring(0, path.lastIndexOf("."));
-
-                        if ("$".equals(parentPath)) {
-                            rootObj.put(item.getFieldName(), newObj);
-                        } else {
-                            JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                            parentObj.put(item.getFieldName(), newObj);
-                        }
-                    }
+        try {
+            for (MocksysTemplateNodeInfo item : nodeInfoList) {
+                // 如果当前节点不是子节点，即为对象或数组
+                if (item.getIsSonNode()) {
+                    JSONPath.set(rootObj, item.getPath(), "");
                 }
             }
-            // 如果当前节点是子节点，则代表当前元素为对象属性，直接添加属性
-            else {
-                // 获取路径信息
-                String path = item.getPath();
-                String parentPath = path.substring(0, path.lastIndexOf("."));
-
-                // 找到父节点，并将属性加入到父节点中
-                JSONObject parentObj = (JSONObject) JSONPath.read(rootObj.toString(), parentPath);
-                parentObj.put(item.getFieldName(), "");
-            }
+        } catch (NullPointerException e) {
+            // 处理空指针异常
+            System.out.println("Error: Unable to set value due to null pointer.");
+            e.printStackTrace();
         }
 
         return rootObj;
@@ -960,11 +929,7 @@ public class MsgMockServiceImpl implements IMsgMockService {
     public StringBuffer createFlStrMessage (List < MocksysTemplateNodeInfo > nodeInfoList) {
         StringBuffer msg = new StringBuffer();
         for (MocksysTemplateNodeInfo item : nodeInfoList) {
-            if ("1".equals(item.getSign())) {
-                msg.append(StringUtils.repeat("0", (item.getLength() + item.getLoopCount() * item.getLoopLength())));
-            } else {
-                msg.append(StringUtils.repeat("0", item.getLength()));
-            }
+            msg.append(StringUtils.repeat("0", item.getLength()));
         }
         return msg;
     }
@@ -1175,13 +1140,11 @@ public class MsgMockServiceImpl implements IMsgMockService {
                 natureTree.setLength(dto.getLength());
                 natureTree.setLoopCount(dto.getLoopCount());
                 natureTree.setLoopLength(dto.getLoopLength());
+                natureTree.setSign(dto.getSign());
+                natureTree.setPath(dto.getPath());
                 if (XML_STR.equals(msgType)) {
-                    natureTree.setPath(dto.getPath());
                     natureTree.setXpath(dto.getPath());
-                    natureTree.setSign(dto.getSign());
                 } else {
-                    natureTree.setSign("");
-                    natureTree.setPath(dto.getPath());
                     natureTree.setXpath(dto.getPath().substring(1).replace(".", "/"));
                 }
                 if (dto.getIsSonNode()) {

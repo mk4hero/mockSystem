@@ -54,11 +54,7 @@ public class EsbMsgService {
             logger.error("服务[" + svcId + "]业务处理失败", e);
         }
 
-        // 组装返回报文
-        JSONObject responseJson = new JSONObject();
-        responseJson.put("svcId", svcId);
-        responseJson.put("result", object);
-        return responseJson.toJSONString();
+        return (String) object;
     }
 
     private String determineMessageType(StringBuffer reqMsg) {
@@ -81,39 +77,27 @@ public class EsbMsgService {
 
         switch (type) {
             case XML:
-                return extractServiceIdFromXml(reqMsg);
+                try {
+                    org.dom4j.Document document = DocumentHelper.parseText(reqMsg.toString());
+                    Element root = document.getRootElement();
+                    Element head = root.element("head");
+                    Element trncod = head.element("trncod");
+                    return trncod.getStringValue();
+                } catch (DocumentException e) {
+                    logger.error(e.getMessage(), e);
+                    return null;
+                }
             case JSON:
-                return extractServiceIdFromJson(reqMsg);
+                String json = reqMsg.toString().trim();
+                LinkedHashMap<String, Object> jsonLinkedHashMap = JSON.parseObject(json, LinkedHashMap.class, Feature.OrderedField);
+                JSONObject jsonObject = new JSONObject(true);
+                jsonObject.putAll(jsonLinkedHashMap);
+                ArrayList busiCodeArray = (ArrayList) JSONPath.read(jsonObject.toString(), "$..busiCode");
+                return (String) busiCodeArray.get(0);
             case FLSTR:
-                return extractServiceIdFromFixedLengthString(reqMsg);
+                return Integer.valueOf(reqMsg.substring(0, 6).trim()).toString();
             default:
                 return null;
         }
-    }
-
-    private String extractServiceIdFromXml(StringBuffer reqMsg) {
-        try {
-            org.dom4j.Document document = DocumentHelper.parseText(reqMsg.toString());
-            Element root = document.getRootElement();
-            Element head = root.element("head");
-            Element trncod = head.element("trncod");
-            return trncod.getStringValue();
-        } catch (DocumentException e) {
-            logger.error(e.getMessage(), e);
-            return null;
-        }
-    }
-
-    private String extractServiceIdFromJson(StringBuffer reqMsg) {
-        String json = reqMsg.toString().trim();
-        LinkedHashMap<String, Object> jsonLinkedHashMap = JSON.parseObject(json, LinkedHashMap.class, Feature.OrderedField);
-        JSONObject jsonObject = new JSONObject(true);
-        jsonObject.putAll(jsonLinkedHashMap);
-        ArrayList busiCodeArray = (ArrayList) JSONPath.read(jsonObject.toString(), "$..busiCode");
-        return (String) busiCodeArray.get(0);
-    }
-
-    private String extractServiceIdFromFixedLengthString(StringBuffer reqMsg) {
-        return reqMsg.substring(0, 6);
     }
 }

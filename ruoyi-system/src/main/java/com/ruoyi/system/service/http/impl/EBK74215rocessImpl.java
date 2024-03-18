@@ -20,20 +20,21 @@ public class EBK74215rocessImpl implements IProcessService {
 
     @Override
     public Object doProcess(StringBuffer inMsg, String msgType) throws GlobalException {
+        String mag = "";
         switch (MsgType.getKey(msgType)){
             case XML:
-                msgMockServiceImpl.serialNetDoXml(inMsg, busiCode);
+                mag = msgMockServiceImpl.serialNetDoXml(inMsg, busiCode);
                 break;
             case JSON:
-                msgMockServiceImpl.serialNetDoJson(inMsg, busiCode);
+                mag = msgMockServiceImpl.serialNetDoJson(inMsg, busiCode);
                 break;
             case FLSTR:
-                msgMockServiceImpl.serialNetDoFlStr(inMsg, busiCode);
+                mag = msgMockServiceImpl.serialNetDoFlStr(inMsg, busiCode);
                 break;
             default :
                 logger.error("报文类型判断错误，请检查！");
         }
 
-        return null;
+        return mag;
     }
 }

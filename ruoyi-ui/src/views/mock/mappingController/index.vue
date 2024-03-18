@@ -297,19 +297,33 @@
               </template>
               {{ item.label }}
             </el-descriptions-item>
-            <el-descriptions-item :key="ind">
+            <el-descriptions-item :key="ind" v-if="item.msgType != 'flStr'">
               <template slot="label">
                 <i class="el-icon-location"></i>
                 原字段路径
               </template>
               {{ item.xpath }}
             </el-descriptions-item>
-            <el-descriptions-item :key="ind">
+            <el-descriptions-item :key="ind" v-if="item.msgType != 'flStr'">
               <template slot="label">
                 <i class="el-icon-s-flag"></i>
                 映射用序号
               </template>
               {{ item.number }}
+            </el-descriptions-item>
+            <el-descriptions-item :key="ind" v-if="item.msgType == 'flStr'">
+              <template slot="label">
+                <i class="el-icon-location"></i>
+                原字段字符串起始位置
+              </template>
+              {{ item.location }}
+            </el-descriptions-item>
+            <el-descriptions-item :key="ind" v-if="item.msgType == 'flStr'">
+              <template slot="label">
+                <i class="el-icon-location"></i>
+                原字段长度
+              </template>
+              {{ item.length }}
             </el-descriptions-item>
           </template>
           <el-descriptions-item :key="item.key">
@@ -319,19 +333,33 @@
             </template>
             {{ item.label }}
           </el-descriptions-item>
-          <el-descriptions-item :key="item.key">
+          <el-descriptions-item :key="item.key" v-if="item.msgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-location"></i>
               目标字段路径
             </template>
             {{ item.xpath }}
           </el-descriptions-item>
-          <el-descriptions-item :key="item.key">
+          <el-descriptions-item :key="item.key" v-if="item.msgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-s-flag"></i>
               映射用序号
             </template>
             {{ item.number }}
+          </el-descriptions-item>
+          <el-descriptions-item :key="ind" v-if="item.msgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              目标字段字符串起始位置
+            </template>
+            {{ item.location }}
+          </el-descriptions-item>
+          <el-descriptions-item :key="ind" v-if="item.msgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              目标字段长度
+            </template>
+            {{ item.length }}
           </el-descriptions-item>
         </el-descriptions>
         <el-form class="form" :ref="`loopForm-${item.key}`" :model="item" label-position="top" label-width="100px">
@@ -458,19 +486,33 @@
             </template>
             {{ modifyForm.sourceFieldName }}
           </el-descriptions-item>
-          <el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.sourceMsgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-location"></i>
               原字段路径
             </template>
             {{ modifyForm.sourcePath }}
           </el-descriptions-item>
-          <el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.sourceMsgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-s-flag"></i>
               映射用序号
             </template>
             {{ modifyForm.sourceNumber }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.sourceMsgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              原字段字符串起始位置
+            </template>
+            {{ modifyForm.sourceLocation }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.sourceMsgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              原字段长度
+            </template>
+            {{ modifyForm.sourceLength }}
           </el-descriptions-item>
           <el-descriptions-item>
             <template slot="label">
@@ -493,19 +535,33 @@
             </template>
             {{ modifyForm.targetFieldName }}
           </el-descriptions-item>
-          <el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.targetMsgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-location"></i>
               目标字段路径
             </template>
             {{ modifyForm.targetPath }}
           </el-descriptions-item>
-          <el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.targetMsgType != 'flStr'">
             <template slot="label">
               <i class="el-icon-s-flag"></i>
               映射用序号
             </template>
             {{ modifyForm.targetNumber }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.targetMsgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              目标字段字符串起始位置
+            </template>
+            {{ modifyForm.targetLocation }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="modifyForm.targetMsgType == 'flStr'">
+            <template slot="label">
+              <i class="el-icon-location"></i>
+              目标字段长度
+            </template>
+            {{ modifyForm.targetLength }}
           </el-descriptions-item>
         </el-descriptions>
         <el-form class="form" :model="modifyForm" label-position="top" label-width="100px">
@@ -886,7 +942,6 @@ export default {
       // 这个动作是为了el-tree重新渲染
       this.rightMsgOptions = [...this.rightMsgOptions]
     },
-
     /** 通过映射关系，使左侧树节点高亮 */
     heightLight(data){
       this.traverseLeftTree(this.leftMsgOptions, data.mappingNumber, ACTION_MAPPING_HIGHLIGHT);
@@ -955,6 +1010,7 @@ export default {
     },
     /** 节点映射规则新增 */
     handleAdd() {
+      this.modifyReset();
       if(this.leftNodeArray.length <= 0){
         this.$notify({
           title: '警告',
@@ -998,6 +1054,7 @@ export default {
       this.selectChange(row.operate, this.modifyForm);
 
       this.modifyTitle = "修改字段映射规则";
+      this.modifyOpen = true;
       this.isLook = false;
     },
     /** 节点映射规则查看 */
@@ -1017,12 +1074,8 @@ export default {
       this.selectChange(row.operate, this.modifyForm);
 
       this.modifyTitle = "查看字段映射规则";
-      this.isLook = true;
-    },
-    modifyReset(){
-      this.modifyForm = {};
-      this.jsonObjParameter = {};
       this.modifyOpen = true;
+      this.isLook = true;
     },
     /** 节点映射规则删除 */
     handleDelete(row) {
@@ -1038,7 +1091,7 @@ export default {
           if (this.modifyForm.id != undefined) {
             modifyMapping(this.processingForUpdate(this.modifyForm)).then(response => {
               this.$modal.msgSuccess("修改成功");
-              this.modifyOpen = false;
+              this.modifyReset();
               this.getList();
             });
           } else {
@@ -1048,17 +1101,20 @@ export default {
                 message: '添加成功',
                 type: 'success'
               });
-              this.open = false;
-              this.getList();
+              this.reset();
               this.$refs.leftTree.setCheckedKeys([]);
               this.$refs.rightTree.setCheckedKeys([]);
+              this.leftNodeArray = [];
+              this.rightNodeArray = [];
+              this.open = false;
+              this.getList();
             });
           }
         // }
       // });
     },
 
-    /** 节点映射规则参数json格式处理 */
+    /** 节点映射规则参数json格式处理 新增*/
     processing(from){
       let jsonList = [];
       for(let rightNode of from){
@@ -1127,7 +1183,7 @@ export default {
       }
       return jsonList;
     },
-
+    /** 节点映射规则参数json格式处理 更新*/
     processingForUpdate(from){
       let mocksysMappingInfo = {
         "id": from.id,
@@ -1195,6 +1251,7 @@ export default {
     },
     /** 取消按钮 */
     cancel() {
+      this.modifyReset();
       this.loopForm = [];
       this.open = false;
       this.modifyOpen = false;
@@ -1213,7 +1270,13 @@ export default {
         sourceNodeArray: [],
         targetNodeArray: [],
       };
+      this.jsonObjParameter = {};
       this.resetForm("form");
+    },
+    modifyReset(){
+      this.modifyForm = {};
+      this.jsonObjParameter = {};
+      this.modifyOpen = false;
     },
 /*************************************************************************************/
     selectChange(value, node){
